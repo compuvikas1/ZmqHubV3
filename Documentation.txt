@@ -1,0 +1,49 @@
+Pre-requisites
+	Visual Studio 2015
+	Sql Server 2012 R2 Express Edition
+
+Step 1:
+	Copy the ZmqHubResource folder in the c:\s2trading folder. This folder contains all the common files required for builing the application.
+
+Step 2:
+	Open sqlserver 2012 r2 Management Studio
+	we need to run the THOM.sql Script kept in the folder C:\s2trading\zmqhubresource\dbscript
+	
+Step 3:
+
+FeedHandler (Server Side Code)
+------------------------------
+
+	Open the FeedHandler in  Visual Studio 2015	
+	Then Change the compilation option to release and cpu mode to x64.
+	Rebuild the whole solution.
+
+	For running the exe we need to do the below steps
+
+		First we need to run the Logger with the below command
+			Logger.exe logger.config
+
+		Second we need to run the FeedPublisher which will fetch the details from the linux machine and publish it using zmq.
+
+Step 4:
+OrderManagementV2 (Server Side Code)
+------------------------------------
+Add Reference for AsyncIO.dll, NetMQ.dll & QuickFix.dll
+C:\s2trading\zmqhubresource\packages\AsyncIO.0.1.20.0\lib\net40\AsyncIO.dll
+C:\s2trading\zmqhubresource\packages\NetMQ.3.3.3.4\lib\net40\NetMQ.dll
+C:\s2trading\zmqhubresource\packages\QuickFix.dll
+
+Rebuild the solution
+And run the program
+
+Step 6:
+
+ScannerWindowApplication (Client Side Code)
+-------------------------------------------
+
+Add Reference for AsyncIO.dll, NetMQ.dll & QuickFix.dll
+C:\s2trading\zmqhubresource\packages\AsyncIO.0.1.20.0\lib\net40\AsyncIO.dll
+C:\s2trading\zmqhubresource\packages\NetMQ.3.3.3.4\lib\net40\NetMQ.dll
+
+This program we can run on the client side to display the feeds on scanner.
+Route the orders to OrderManagementV2.
