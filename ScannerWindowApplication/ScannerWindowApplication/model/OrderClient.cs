@@ -20,7 +20,7 @@ namespace ScannerWindowApplication
             string[] toks = clientString.Split(':');
             //foreach (string tok in toks) { Console.WriteLine("["+tok+"]"); }
             symbol = toks[1].ToString();
-            int pad = 8 - toks[1].Length;
+            int pad = 11 - toks[1].Length;
             if (pad > 0)
             {
                 for (int i = 0; i < pad; i++)
@@ -43,6 +43,8 @@ namespace ScannerWindowApplication
                 ord.exch = toks[8].ToCharArray();
                 ord.machineID = toks[9].ToCharArray();
                 ord.userID = toks[10].ToCharArray();
+                ord.orderType = (int)Convert.ToDecimal(toks[11].ToString());
+                ord.timeInForce = (int)Convert.ToDecimal(toks[12].ToString());
             }
             else if (toks[0].Equals("CAN") && toks.Length >= 3)
             {
@@ -98,7 +100,7 @@ namespace ScannerWindowApplication
             }
         }
 
-        public static bool insertOrder(string symbol, string expiry, string callput, string exch, string strike,  double price, int qty, char action, TradingBoxV2 tb)
+        public static bool insertOrder(string symbol, string expiry, string callput, string exch, string strike,  double price, int qty, char action, int OrderType, int TIF, TradingBoxV2 tb)
         {
             tradingBox = tb;
             try
@@ -117,10 +119,10 @@ namespace ScannerWindowApplication
                 Byte[] sendBytes = null;
 
                 //stringToStruct("INS:AAPL0000:111.90:1:B:21:25", ref os);
-                string input = "INS:" + symbol + ":" + price + ":" + qty+ ":" + strike + ":" + action + ":" + expiry + ":" + callput + ":" + exch +":" + MachineGuid + ":" + UserGuid;
+                string input = "INS:" + symbol + ":" + price + ":" + qty + ":" + strike + ":" + action + ":" + expiry + ":" + callput + ":" + exch + ":" + MachineGuid + ":" + UserGuid + ":" + OrderType + ":" + TIF;
                 tradingBox.displayTextArea(input);
 
-                OrderStruct os = new OrderStruct(8, 8);
+                OrderStruct os = new OrderStruct(11, 8);
                 stringToStruct(input, ref os);
                 os.display();
 
@@ -139,21 +141,126 @@ namespace ScannerWindowApplication
 
                 networkStream.Write(sendBytes, 0, sendBytes.Length);
                 tradingBox.displayTextArea("written " + sendBytes.Length + " bytes.");
-                
-
                 System.Threading.Thread.Sleep(200);
                 networkStream.Flush();
 
                 byte[] bytesFrom = new byte[(Int32)clientSocket.ReceiveBufferSize + 1];
                 networkStream.Read(bytesFrom, 0, (Int32)clientSocket.ReceiveBufferSize);
                 reqType = System.Text.Encoding.ASCII.GetString(bytesFrom);
-                tradingBox.displayTextArea("Received : " + reqType);
+                tradingBox.ShowStatus1(reqType);
+                tradingBox.displayTextArea("Received : " + reqType);                
+
                 clientSocket.Close();
-                                
+
+                try
+                {
+                    String[] arr = reqType.Split(':');
+                    //if (arr.Length == 4)
+                    {
+                        string strOrdId = arr[3];
+                        if (strOrdId.Contains('\0'))
+                        {
+                            tradingBox.orderid = strOrdId.Substring(0, strOrdId.IndexOf('\0'));
+                        }
+                        else
+                        {
+                            tradingBox.orderid = strOrdId;
+                            tradingBox.ShowStatus1("OrderId  : " + tradingBox.orderid);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    tradingBox.ShowStatus1("Exception in OrderId Generation " + e.Message);
+                }
+                    return true;
+            }
+            catch (Exception e)
+            {
+                tradingBox.ShowStatus1("Erro..... Order Details");
+                tradingBox.displayTextArea("Error..... " + e.StackTrace);
+            }
+            return false;
+        }
+
+        public static bool modifyOrder(int orderid, string symbol, string expiry, string callput, string exch, string strike, double price, int qty, char action, int OrderType, int TIF, TradingBoxV2 tb)
+        {
+            tradingBox = tb;
+            try
+            {
+                //Console.WriteLine("Format : INS:SYM:Price:Quantity:direction:machineID:userID\n");
+                //Console.WriteLine("usage Number of Test Cases followed by input per line <INS:AAPL:111.90:1:B> or <CAN:AAPL:0:111.90:1:B>\nDesc : INS:SYMBOL:PRICE:QTY:DIR");
+
+                /*byte[] bytesFrom = new byte[(int)clientSocket.ReceiveBufferSize + 1];
+                networkStream.Read(bytesFrom, 0, (int)clientSocket.ReceiveBufferSize);
+                reqType = System.Text.Encoding.ASCII.GetString(bytesFrom);
+                Console.WriteLine("Received : " + reqType);
+                clientSocket.Close();
+                */
+
+                string reqType = null;
+                Byte[] sendBytes = null;
+
+                //stringToStruct("INS:AAPL0000:111.90:1:B:21:25", ref os);
+                string input = "AMD:" + symbol + ":" + orderid + ":" + price + ":" + qty + ":" + strike + ":" + action + ":" + expiry + ":" + callput + ":" + exch + ":" + MachineGuid + ":" + UserGuid + ":" + OrderType + ":" + TIF;
+                tradingBox.displayTextArea(input);
+
+                OrderStruct os = new OrderStruct(11, 8);
+                stringToStruct(input, ref os);
+                os.display();
+
+                TcpClient clientSocket = new TcpClient();
+                tradingBox.displayTextArea("Connecting.....");
+
+                //clientSocket.Connect("127.0.0.1", 5552);
+                clientSocket.Connect("158.69.193.253", 5552);
+                // use the ipaddress as in the server program
+
+                tradingBox.displayTextArea("Connected ...");
+
+                NetworkStream networkStream = clientSocket.GetStream();
+
+                sendBytes = (getBytes(os));
+
+                networkStream.Write(sendBytes, 0, sendBytes.Length);
+                tradingBox.displayTextArea("written " + sendBytes.Length + " bytes.");
+                System.Threading.Thread.Sleep(200);
+                networkStream.Flush();
+
+                byte[] bytesFrom = new byte[(Int32)clientSocket.ReceiveBufferSize + 1];
+                networkStream.Read(bytesFrom, 0, (Int32)clientSocket.ReceiveBufferSize);
+                reqType = System.Text.Encoding.ASCII.GetString(bytesFrom);
+                tradingBox.ShowStatus1(reqType);
+                tradingBox.displayTextArea("Received : " + reqType);
+
+                clientSocket.Close();
+
+                try
+                {
+                    String[] arr = reqType.Split(':');
+                    //if (arr.Length == 4)
+                    {
+                        string strOrdId = arr[3];
+                        if (strOrdId.Contains('\0'))
+                        {
+                            tradingBox.orderid = strOrdId.Substring(0, strOrdId.IndexOf('\0'));
+                        }
+                        else
+                        {
+                            tradingBox.orderid = strOrdId;
+                            tradingBox.ShowStatus1("OrderId  : " + tradingBox.orderid);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    tradingBox.ShowStatus1("Exception in OrderId Generation " + e.Message);
+                }
                 return true;
             }
             catch (Exception e)
             {
+                tradingBox.ShowStatus1("Erro..... Order Details");
                 tradingBox.displayTextArea("Error..... " + e.StackTrace);
             }
             return false;
@@ -170,14 +277,15 @@ namespace ScannerWindowApplication
                 string input = "CAN:" + symbol + ":" + orderid + ":" + MachineGuid + ":" + UserGuid;
                 tradingBox.displayTextArea(input);
 
-                OrderStruct os = new OrderStruct(8, 8);
+                OrderStruct os = new OrderStruct(11, 8);
                 stringToStruct(input, ref os);
                 os.display();
 
                 TcpClient clientSocket = new TcpClient();
                 tradingBox.displayTextArea("Connecting.....");
 
-                clientSocket.Connect("127.0.0.1", 5551);
+                //clientSocket.Connect("127.0.0.1", 5551);
+                clientSocket.Connect("158.69.193.253", 5552);
                 // use the ipaddress as in the server program
 
                 tradingBox.displayTextArea("Connected ...");
@@ -195,8 +303,31 @@ namespace ScannerWindowApplication
                 byte[] bytesFrom = new byte[(int)clientSocket.ReceiveBufferSize + 1];
                 networkStream.Read(bytesFrom, 0, (int)clientSocket.ReceiveBufferSize);
                 reqType = System.Text.Encoding.ASCII.GetString(bytesFrom);
+                tradingBox.ShowStatus1(reqType);
                 tradingBox.displayTextArea("Received : " + reqType);
                 clientSocket.Close();
+
+                try
+                {
+                    String[] arr = reqType.Split(':');
+                    //if (arr.Length == 4)
+                    {
+                        string strOrdId = arr[3];
+                        if (strOrdId.Contains('\0'))
+                        {
+                            tradingBox.orderid = strOrdId.Substring(0, strOrdId.IndexOf('\0'));
+                        }
+                        else
+                        {
+                            tradingBox.orderid = strOrdId;
+                            tradingBox.ShowStatus1("OrderId  : " + tradingBox.orderid);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    tradingBox.ShowStatus1("Exception in OrderId Generation " + e.Message);
+                }
 
                 return true;
             }

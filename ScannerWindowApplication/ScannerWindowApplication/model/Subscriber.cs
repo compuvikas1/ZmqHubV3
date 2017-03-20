@@ -72,7 +72,7 @@ namespace ScannerWindowApplication
                                 break;
                             string messageReceived;
 
-                            System.Threading.Thread.Sleep(100);
+                            System.Threading.Thread.Sleep(5);
 
                             if (subSocket.TryReceiveFrameString(out messageReceived))
                             {
@@ -91,7 +91,7 @@ namespace ScannerWindowApplication
                                 string asksize = arr[6];                                
                                 
                                 DateTime dt1 = epoch.AddSeconds(Convert.ToInt64(arr[7]) / 1000);
-                                string feedtime = dt1.ToString("dd/MM/yyyy HH:mm:ss");
+                                string feedtime = dt1.ToString("HH:mm:ss");
 
                                 string ltt = arr[8];
                                 string tradetime = "";

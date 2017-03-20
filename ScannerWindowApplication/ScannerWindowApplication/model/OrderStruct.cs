@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 
 namespace ScannerWindowApplication
@@ -33,6 +29,9 @@ namespace ScannerWindowApplication
     {
         public int ID;
         public int OrderNo;
+        public int fixAcceptedID;
+        [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 15)]
+        public char[] fixOrderID;
         public int methodID;
         public float price;
         public int strike;
@@ -41,7 +40,7 @@ namespace ScannerWindowApplication
         public int version;
         [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 8)]
         public char[] OrderStatus;
-        [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 8)]
+        [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 11)]
         public char[] symbol;
         [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 8)]
         public char[] expiry;
@@ -53,6 +52,8 @@ namespace ScannerWindowApplication
         public char[] machineID;
         [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 36)]
         public char[] userID;
+        public int orderType;
+        public int timeInForce;
 
         public OrderStruct(int isym, int ios)
         {
@@ -71,6 +72,10 @@ namespace ScannerWindowApplication
             exch = new char[3];
             machineID = new char[36];
             userID = new char[36];
+            orderType = 0;
+            timeInForce = 0;
+            fixAcceptedID = 0;
+            fixOrderID = new char[15];
         }
 
         public void display()
@@ -80,6 +85,8 @@ namespace ScannerWindowApplication
             Console.WriteLine("methodID : {0}", methodID);
             Console.WriteLine("OrderID : {0}", ID);
             Console.WriteLine("OrderNo : {0}", OrderNo);
+            Console.WriteLine("FixAcceptedOrderID : {0}", fixAcceptedID);
+            Console.WriteLine("FixOrderID : {0}", fixOrderID);
             Console.WriteLine("version : {0}", version);
             Console.WriteLine("price : {0}", price);
             Console.WriteLine("strike : {0}", strike);
@@ -89,11 +96,14 @@ namespace ScannerWindowApplication
             Console.WriteLine("exch : {0}", new string(exch));
             Console.WriteLine("machineID : {0}", new string(machineID));
             Console.WriteLine("userID : {0}", new string(userID));
+            Console.WriteLine("OrderType : {0}", orderType);
+            Console.WriteLine("TimeInForce : {0}", timeInForce);
         }
     };
 
     public enum RequestType
     {
-        INS, AMD, CAN, UNK
+        INS, AMD, CAN, UNK, FIL
     };
+
 }

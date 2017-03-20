@@ -12,6 +12,7 @@ using System.Threading;
 using System.Net;
 using System.Runtime.InteropServices;
 using QuickFix;
+using QuickFix.Fields;
 
 namespace OrderManagementV2
 {
@@ -60,8 +61,7 @@ namespace OrderManagementV2
     {
         static void Main(string[] args)
         {
-            //Fix part
-
+            //Fix part            
             fixApp fx = new fixApp();
             fx.initFix();
 
@@ -194,13 +194,14 @@ namespace OrderManagementV2
                         case RequestType.CAN:
                             //Do cancel activity
                             Orders ordCan = new Orders();
-                            if (ordCan.cancelOrder(os) < 0)
+                            int OrderNoCan = -1;
+                            if ((OrderNoCan = ordCan.cancelOrder(os)) < 0)
                             {
                                 serverResponse = "FAILURE:CAN:ORDID:" + Convert.ToString(os.OrderNo);
                             }
                             else
                             {
-                                serverResponse = "SUCCESS:CAN:ORDID:" + Convert.ToString(os.OrderNo);
+                                serverResponse = "SUCCESS:CAN:ORDID:" + Convert.ToString(OrderNoCan);
                             }
                             break;
                         case RequestType.FIL:

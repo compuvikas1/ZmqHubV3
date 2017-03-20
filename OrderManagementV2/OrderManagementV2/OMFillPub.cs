@@ -40,5 +40,19 @@ namespace OrderManagementV2
             }
             return 0;
         }
+
+        //publish the orderinfo to fillpublisher
+        public int zmqUpdates(string data)
+        {
+            string zmqConnString = ">tcp://" + zmqPubHost + ":" + zmqPubPort;
+            using (var requestSocket = new RequestSocket(zmqConnString))
+            {
+                Console.WriteLine("Sending : {0}, {1} , {2}", zmqPubHost, zmqPubPort, data);
+                requestSocket.SendFrame(data);
+                var message = requestSocket.ReceiveFrameString();
+                Console.WriteLine("requestSocket : Received '{0}'", message);
+            }
+            return 0;
+        }
     }
 }

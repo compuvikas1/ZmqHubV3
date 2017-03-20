@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Globalization;
+using System.IO;
 
 namespace ScannerWindowApplication
 {
@@ -40,7 +41,8 @@ namespace ScannerWindowApplication
                 var colBidPrice = dtFeed.Columns.Add("BidPrice", typeof(double));
                 var colAskPrice = dtFeed.Columns.Add("AskPrice", typeof(double));
                 var colAskSize = dtFeed.Columns.Add("AskSize");
-                
+                var colSpread = dtFeed.Columns.Add("Spread", typeof(double));
+
                 // set primary key constain so we can search for specific rows
                 dtFeed.PrimaryKey = new[] { colTokenNo};
             }
@@ -87,7 +89,7 @@ namespace ScannerWindowApplication
                     {
                         SecurityMaster secMaster = ScannerDashboard.dictSecurityMaster[feed.tokenno];
                         symbol = secMaster.Symbol;
-                        if (secMaster.Instrument != "EQ")
+                        if (secMaster.Instrument != "EQ") // its a future or option stock,then we will get expirydate
                         {
                             expiry = secMaster.ExpiryDate;
                         }
@@ -100,9 +102,12 @@ namespace ScannerWindowApplication
 
                     var exisiting = dtFeed.Rows.Find(new Object[] { feed.tokenno });
                     if (exisiting != null)
-                        exisiting.ItemArray = new object[] { feed.tokenno, feed.feedtime, symbol, expiry, strike, callput, feed.ltp, feed.ltq, feed.bidsize, feed.bidprice, feed.askprice, feed.asksize  };
+                        exisiting.ItemArray = new object[] { feed.tokenno, feed.feedtime, symbol, expiry, strike, callput, feed.ltp, feed.ltq, feed.bidsize, feed.bidprice, feed.askprice, feed.asksize, Convert.ToString(Math.Round((Convert.ToDouble(feed.askprice) - Convert.ToDouble(feed.bidprice)), 2)) };
                     else
-                        dtFeed.Rows.Add(new Object[] { feed.tokenno, feed.feedtime, symbol, expiry, strike, callput, feed.ltp, feed.ltq, feed.bidsize, feed.bidprice, feed.askprice, feed.asksize });                    
+                    {
+                        if (ScannerDashboard.dictSecurityMaster.ContainsKey(feed.tokenno))
+                            dtFeed.Rows.Add(new Object[] { feed.tokenno, feed.feedtime, symbol, expiry, strike, callput, feed.ltp, feed.ltq, feed.bidsize, feed.bidprice, feed.askprice, feed.asksize, Convert.ToString(Math.Round((Convert.ToDouble(feed.askprice) - Convert.ToDouble(feed.bidprice)), 2)) });
+                    }
                 }
                 catch(Exception e)
                 {
@@ -118,19 +123,40 @@ namespace ScannerWindowApplication
             return val;
         }
 
+        public void loadClosePrices()
+        {
+            string[] lines = File.ReadAllLines(@"C:\s2trading\zmqhubresource\contractdetails\ClosePriceTokenList.csv");
+            foreach (string line in lines)
+            {
+                string[] arr = line.Split(',');
+                string TokenNo = arr[0];
+                double closePrice = Convert.ToDouble(arr[1]);
+
+                ScannerDashboard.dictSecurityCloseMaster[TokenNo] = closePrice;
+            }
+        }
+
         private void ScannerBox_Load(object sender, EventArgs e)
         {
+            loadClosePrices();
+            cmbLtpCondition.SelectedIndex = 0;
+            cmbLtqCondition.SelectedIndex = 0;
+            cmbSpreadCondition.SelectedIndex = 0;
+
+            rbtnAnd1.Checked = true;
+            rbtnAnd2.Checked = true;
+
             Subscriber sc = new Subscriber(parentSD);
             Thread th = new Thread(new ThreadStart(sc.ThreadB));
 
-            //FillSubscriber scFill = new FillSubscriber();
-            //Thread thFill = new Thread(new ThreadStart(scFill.ThreadB));
+            FillSubscriber scFill = new FillSubscriber();
+            Thread thFill = new Thread(new ThreadStart(scFill.ThreadB));
 
             Console.WriteLine("Threads started :");
 
             // Start thread B
             th.Start();
-            //thFill.Start();
+            thFill.Start();
         }
 
         private void ScannerBox_FormClosing(object sender, FormClosingEventArgs e)
@@ -169,6 +195,71 @@ namespace ScannerWindowApplication
                         dataGridView1.DoDragDrop(view, DragDropEffects.Copy);
                 }
             }
+        }
+
+        private void btnApplyFilter_Click(object sender, EventArgs e)
+        {
+            string rowFilter = "";
+
+            string ltpFilterValue = txtLTP.Text;
+            
+            if (ltpFilterValue.Trim().Length > 0)
+            {
+                string ltpFilterCond = cmbLtpCondition.SelectedItem.ToString();
+                rowFilter = string.Format("[{0}] {1} '{2}'", "LTP", ltpFilterCond, ltpFilterValue);
+                (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = rowFilter;
+            }
+
+            string ltqFilterValue = txtLTQ.Text;
+            if (ltqFilterValue.Trim().Length > 0)
+            {
+                string ltqFilterCond = cmbLtqCondition.SelectedItem.ToString();
+                string concatenateCond = "AND";
+                if (rbtnOr1.Checked == true)
+                    concatenateCond = "OR";
+
+                if(rowFilter.Length>0)
+                    rowFilter += string.Format(" {0} [{1}] {2} '{3}'", concatenateCond, "LTQ",  ltqFilterCond, ltqFilterValue);
+                else
+                    rowFilter = string.Format("[{0}] {1} '{2}'", "LTQ", ltqFilterCond, ltqFilterValue);                
+            }
+
+            string spreadFilterValue = txtSpread.Text;
+            if (spreadFilterValue.Trim().Length > 0)
+            {
+                string spreadFilterCond = cmbSpreadCondition.SelectedItem.ToString();
+                string concatenateCond = "AND";
+                if (rbtnOr2.Checked == true)
+                    concatenateCond = "OR";
+
+                if (rowFilter.Length > 0)
+                    rowFilter += string.Format(" {0} [{1}] {2} '{3}'", concatenateCond, "Spread", spreadFilterCond, spreadFilterValue);
+                else
+                    rowFilter = string.Format("[{0}] {1} '{2}'", "Spread", spreadFilterCond, spreadFilterValue);
+            }
+
+            if (rowFilter.Length > 0)
+                (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = rowFilter;
+            else
+                (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = String.Empty;
+        }
+
+        private void splitContainer1_Panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            txtLTP.Text = "";
+            txtLTQ.Text = "";
+            txtSpread.Text = "";
+            (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = String.Empty;
         }
     }
 

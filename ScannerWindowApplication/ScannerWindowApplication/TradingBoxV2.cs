@@ -21,19 +21,18 @@ namespace ScannerWindowApplication
         Thread th = null;
         Boolean displayFuture = false;
         int tabsel = 0;
+        double tokenClosePrice = 0.0;
+        public string orderid = "0";
+        char lastaction = 'S';
 
         public TradingBoxV2(string tokenno)
         {
             InitializeComponent();
-            this.tokenno = tokenno;
-            
+            this.tokenno = tokenno;            
         }
 
         private void TradingBoxV2_Load(object sender, EventArgs e)
         {
-            
-
-
             var symbolListEquity = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Instrument == "EQ").Select(x => x.Value.Symbol).Distinct().ToList();
             cmbStocksSymbol.Items.AddRange(symbolListEquity.ToArray());
 
@@ -62,6 +61,7 @@ namespace ScannerWindowApplication
 
                     cmbStocksTif.SelectedIndex = 0;
                     cmbStocksVenue.SelectedIndex = 0;
+                    cmbStocksType.SelectedIndex = 0;
 
                     displayFuture = true;
                     tabControl1.SelectedIndex = 0;
@@ -77,7 +77,7 @@ namespace ScannerWindowApplication
                     cmbFutExpiry.SelectedItem = secMaster.ExpiryDate;
                     cmbFuturesTif.SelectedIndex = 0;
                     cmbFuturesVenue.SelectedIndex = 0;
-
+                    cmbFuturesType.SelectedIndex = 0;
                     displayFuture = true;
                     tabControl1.SelectedIndex = 1;
                 }
@@ -96,6 +96,7 @@ namespace ScannerWindowApplication
                     cmbOptionsStrike.SelectedItem = secMaster.StrikePrice;
                     cmbOptionsTif.SelectedIndex = 0;
                     cmbOptionsDest.SelectedIndex = 0;
+                    cmbOptionsType.SelectedIndex = 0;
 
                     displayFuture = true;
                     tabControl1.SelectedIndex = 2;
@@ -105,7 +106,7 @@ namespace ScannerWindowApplication
             Console.WriteLine("Threads started :");
             th.Start();
         }
-        
+
         public void ThreadTrading()
         {
             while (flag && ScannerBox.openedMainForm)
@@ -114,6 +115,14 @@ namespace ScannerWindowApplication
                 {
                     if (displayFuture)
                     {
+                        if(FillSubscriber.dictFillDetails.ContainsKey(orderid))
+                        {
+                            string strFilldetails = FillSubscriber.dictFillDetails[orderid];
+                            //FillID: Price: Qty: FilledQty
+                            string []filldetailsarr = strFilldetails.Split(':');
+                            ShowStatus1(strFilldetails);
+                        }
+
                         if (Subscriber.dictFeedDetails.ContainsKey(tokenno))
                         {
                             Feed feed = Subscriber.dictFeedDetails[tokenno];
@@ -121,21 +130,30 @@ namespace ScannerWindowApplication
                             {
                                 if (tabsel == 0)
                                 {
-                                    double closePrice = Convert.ToDouble(feed.askprice); // need to fetch the close price of previous day for this tokenno
+                                    double closePrice = tokenClosePrice; // need to fetch the close price of previous day for this tokenno
                                     txtStocksLTP.Text = feed.ltp;
                                     txtStocksLTQ.Text = feed.ltq;
                                     txtStocksBidSize.Text = feed.bidsize;
                                     txtStocksBidPrice.Text = feed.bidprice;
                                     txtStocksAskPrice.Text = feed.askprice;
                                     txtStocksAskSize.Text = feed.asksize;
+                                    txtStocksSpread.Text = Convert.ToString(Math.Round((Convert.ToDouble(feed.askprice) - Convert.ToDouble(feed.bidprice)), 2));
+                                    txtStocksClose.Text = Convert.ToString(closePrice);
 
                                     double ltp = Convert.ToDouble(feed.ltp);
 
                                     double change = closePrice - Convert.ToDouble(feed.ltp);
                                     txtStocksChange.Text = Convert.ToString(change);
-                                    double percChange = Math.Round(((ltp - closePrice) / closePrice) * 100, 2);
-                                    txtStocksPercentChange.Text = Convert.ToString(percChange);
-
+                                    
+                                    if (closePrice > 0)
+                                    {
+                                        double percChange = Math.Round(((ltp - closePrice) / closePrice) * 100, 2);
+                                        txtStocksPercentChange.Text = Convert.ToString(percChange);
+                                    }
+                                    else
+                                    {
+                                        txtStocksPercentChange.Text = Convert.ToString(closePrice);
+                                    }
                                     dgvStocksPrices.Rows.Clear();
 
                                     if (Subscriber.dictFeedLevels.ContainsKey(tokenno))
@@ -182,20 +200,30 @@ namespace ScannerWindowApplication
                                 }
                                 else if (tabsel == 1)
                                 {
-                                    double closePrice = Convert.ToDouble(feed.askprice); // need to fetch the close price of previous day for this tokenno
+                                    double closePrice = tokenClosePrice; // need to fetch the close price of previous day for this tokenno
                                     txtFutLTP.Text = feed.ltp;
                                     txtFutLTQ.Text = feed.ltq;
                                     txtFutBidSz.Text = feed.bidsize;
                                     txtFutBidPz.Text = feed.bidprice;
                                     txtFutAskPz.Text = feed.askprice;
                                     txtFutAskSz.Text = feed.asksize;
+                                    txtFutSpread.Text = Convert.ToString(Math.Round((Convert.ToDouble(feed.askprice) - Convert.ToDouble(feed.bidprice)), 2));
+                                    txtFutClosePrice.Text = Convert.ToString(closePrice);
 
                                     double ltp = Convert.ToDouble(feed.ltp);
 
                                     double change = closePrice - Convert.ToDouble(feed.ltp);
                                     txtFutChange.Text = Convert.ToString(change);
-                                    double percChange = Math.Round(((ltp - closePrice) / closePrice) * 100, 2);
-                                    txtFutPercentChange.Text = Convert.ToString(percChange);
+
+                                    if (closePrice > 0)
+                                    {
+                                        double percChange = Math.Round(((ltp - closePrice) / closePrice) * 100, 2);
+                                        txtFutPercentChange.Text = Convert.ToString(percChange);
+                                    }
+                                    else
+                                    {
+                                        txtFutPercentChange.Text = Convert.ToString(closePrice);
+                                    }
 
                                     dgvFuturesPrices.Rows.Clear();
                                     if (Subscriber.dictFeedLevels.ContainsKey(tokenno))
@@ -260,20 +288,29 @@ namespace ScannerWindowApplication
                                 }
                                 else if(tabsel == 2)
                                 {
-                                    double closePrice = Convert.ToDouble(feed.askprice); // need to fetch the close price of previous day for this tokenno
-                                    txtFutLTP.Text = feed.ltp;
-                                    txtFutLTQ.Text = feed.ltq;
+                                    double closePrice = tokenClosePrice; // need to fetch the close price of previous day for this tokenno
+                                    txtOptionsLTP.Text = feed.ltp;
+                                    txtOptionsLTQ.Text = feed.ltq;
                                     txtOptionsBidSize.Text = feed.bidsize;
                                     txtOptionsBidPrice.Text = feed.bidprice;
                                     txtOptionsAskPrice.Text = feed.askprice;
                                     txtOptionsAskSize.Text = feed.asksize;
+                                    txtOptionsSpread.Text = Convert.ToString(Math.Round((Convert.ToDouble(feed.askprice) - Convert.ToDouble(feed.bidprice)), 2));
+                                    txtOptionsClosePrice.Text = Convert.ToString(closePrice);
 
                                     double ltp = Convert.ToDouble(feed.ltp);
                                     double change = closePrice - Convert.ToDouble(ltp);
                                     txtOptionsChange.Text = Convert.ToString(change);
-                                    
-                                    double percChange = Math.Round(((ltp - closePrice) / closePrice) * 100, 2);
-                                    txtOptionsPercentChange.Text = Convert.ToString(percChange);
+
+                                    if (closePrice > 0)
+                                    {
+                                        double percChange = Math.Round(((ltp - closePrice) / closePrice) * 100, 2);
+                                        txtOptionsPercentChange.Text = Convert.ToString(percChange);
+                                    }
+                                    else
+                                    {
+                                        txtOptionsPercentChange.Text = Convert.ToString(closePrice);
+                                    }
 
                                     dgvOptionsPrices.Rows.Clear();
 
@@ -281,7 +318,6 @@ namespace ScannerWindowApplication
                                     {
                                         string levels = Subscriber.dictFeedLevels[tokenno];
                                         string[] leveldata = levels.Split('|');
-
 
                                         string[] lev = new string[4];
 
@@ -337,22 +373,54 @@ namespace ScannerWindowApplication
             }
         }
 
-        private void btnStocksBuy_Click(object sender, EventArgs e)
+
+        
+        string oldMsg = "";
+        public void ShowStatus1(string status)
         {
-           
+            oldMsg = this.StatusLabelMessage1.Text;
+            if (status.Contains('\0'))
+            {
+                this.StatusLabelMessage1.Text = status.Substring(0, status.IndexOf('\0'));
+            }
+            else
+            {
+                this.StatusLabelMessage1.Text = status;
+                this.StatusLabelMessage1.Invalidate(); // To force status bar redraw
+                this.statusStrip1.Refresh();
+            }
         }
+
+        public void RestoreStatus1()
+        {
+            this.StatusLabelMessage1.Text = oldMsg;
+        }
+
+        //public void ShowStatus4(string status)
+        //{
+        //    oldMsg = this.StatusLabelMessage4.Text;
+        //    this.StatusLabelMessage4.Text = status;
+        //    this.StatusLabelMessage4.Invalidate(); // To force status bar redraw
+        //}
+
+        //public void RestoreStatus4()
+        //{
+        //    this.StatusLabelMessage4.Text = oldMsg;
+        //}
 
         public void displayTextArea(string data)
         {
             richTextBox2.AppendText(data + "\n");
         }
-
-
+        
         private void cmbFuturesSymbol_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var symbol = cmbFutSymbol.SelectedItem.ToString();
-            string instrument = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == symbol && (x.Value.Instrument == "FUTSTK" || x.Value.Instrument == "FUTIDX")).Select(x => x.Value.Instrument).Distinct().ToList().First();
-            loadExpiry(symbol, instrument);
+            if (cmbFutSymbol.SelectedItem != null)
+            {
+                var symbol = cmbFutSymbol.SelectedItem.ToString();
+                string instrument = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == symbol && (x.Value.Instrument == "FUTSTK" || x.Value.Instrument == "FUTIDX")).Select(x => x.Value.Instrument).Distinct().ToList().First();
+                loadExpiry(symbol, instrument);
+            }
         }
 
         public void loadExpiry(String symbol, String instrument)
@@ -380,34 +448,137 @@ namespace ScannerWindowApplication
 
         private void btnFuturesBuy_Click(object sender, EventArgs e)
         {
-            string symbol = cmbFutSymbol.SelectedItem.ToString();
-            
-            //DateTime oExpiryDate = DateTime.ParseExact(cmbFuturesExpiry.SelectedItem.ToString(), "yyyy-MM-dd", null);
-            //string expiry = oExpiryDate.ToString("yyyyMMdd");
-            string expiry = "20170223";
-            
-            double price = Convert.ToDouble(txtFuturesLimit.Text);
+            string symbol = cmbFutSymbol.SelectedItem.ToString();            
+            DateTime oExpiryDate = DateTime.ParseExact(cmbFutExpiry.SelectedItem.ToString(), "yyyy-MM-dd", null);
+            string expiry = oExpiryDate.ToString("yyyyMMdd");
+            //string expiry = "20170223";
+                        
+            int Qty = 0;
+            double limitPrice = 0;
+            try
+            {
+                Qty = Convert.ToInt32(txtFuturesQty.Text);
+                if (Qty > 0)
+                {
+                    //1 for MARKET and  2 for LIMIT
+                    int ordType = 0;
 
-            int qty = Convert.ToInt32(txtFuturesQty.Text);
-            char action = 'B';
-            
-            OrderClient.insertOrder(symbol,expiry, "NA","NFO", "0", price, qty, action, this);
+                    if (cmbFuturesType.SelectedItem.ToString().Equals("MARKET"))
+                    {
+                        ordType = 1;
+                    }
+                    else if (cmbFuturesType.SelectedItem.ToString().Equals("LIMIT"))
+                    {
+                        ordType = 2;                        
+                    }
+
+                    try
+                    {
+                        limitPrice = Convert.ToDouble(txtFuturesLimit.Text);
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowStatus1("Enter Valid value in Price" + ex.Message);
+                    }
+
+                    if (ordType == 1 && limitPrice > 0)
+                    {
+                        char action = 'B';
+                        lastaction = action;
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            OrderClient.insertOrder(symbol, expiry, "NA", "NFO", "0", limitPrice, Qty, action, ordType, 0, this);
+                        }
+                    }
+                    else if (ordType == 2 && limitPrice > 0)
+                    {
+                        char action = 'B';
+                        lastaction = action;
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            OrderClient.insertOrder(symbol, expiry, "NA", "NFO", "0", limitPrice, Qty, action, ordType, 0, this);
+                        }
+                    }
+                    else
+                    {
+                        ShowStatus1("Enter Valid value in Price");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowStatus1("Enter Valid number in Qty" + ex.Message);
+            }
         }
 
         
         private void btnFuturesSell_Click(object sender, EventArgs e)
         {
             string symbol = cmbFutSymbol.SelectedItem.ToString();
+            DateTime oExpiryDate = DateTime.ParseExact(cmbFutExpiry.SelectedItem.ToString(), "yyyy-MM-dd", null);
+            string expiry = oExpiryDate.ToString("yyyyMMdd");
+            //string expiry = "20170223";
 
-            //DateTime oExpiryDate = DateTime.ParseExact(cmbFuturesExpiry.SelectedItem.ToString(), "yyyy-MM-dd", null);
-            //string expiry = oExpiryDate.ToString("yyyyMMdd");
-            string expiry = "20170223";
+            int Qty = 0;
+            double limitPrice = 0;
+            try
+            {
+                Qty = Convert.ToInt32(txtFuturesQty.Text);
+                if (Qty > 0)
+                {
+                    //1 for MARKET and  2 for LIMIT
+                    int ordType = 0;
 
-            double price = Convert.ToDouble(txtFuturesLimit.Text);
-            int qty = Convert.ToInt32(txtFuturesQty.Text);
-            char action = 'S';
+                    if (cmbFuturesType.SelectedItem.ToString().Equals("MARKET"))
+                    {
+                        ordType = 1;
+                    }
+                    else if (cmbFuturesType.SelectedItem.ToString().Equals("LIMIT"))
+                    {
+                        ordType = 2;
+                    }
 
-            OrderClient.insertOrder(symbol, expiry, "NA", "NFO", "0", price, qty, action, this);
+                    try
+                    {
+                        limitPrice = Convert.ToDouble(txtFuturesLimit.Text);
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowStatus1("Enter Valid value in Price" + ex.Message);
+                    }
+
+                    if (ordType == 1 && limitPrice > 0)
+                    {
+                        char action = 'S';
+                        lastaction = action;
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            OrderClient.insertOrder(symbol, expiry, "NA", "NFO", "0", limitPrice, Qty, action, ordType, 0, this);
+                        }
+                    }
+                    else if (ordType == 2 && limitPrice > 0)
+                    {
+                        char action = 'S';
+                        lastaction = action;
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            OrderClient.insertOrder(symbol, expiry, "NA", "NFO", "0", limitPrice, Qty, action, ordType, 0, this);
+                        }
+                    }
+                    else
+                    {
+                        ShowStatus1("Enter Valid value in Price");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowStatus1("Enter Valid number in Qty" + ex.Message);
+            }
         }
 
         private void btnBuy_Click(object sender, EventArgs e)
@@ -418,12 +589,70 @@ namespace ScannerWindowApplication
             string expiry = oExpiryDate.ToString("yyyyMMdd");
             string callput = cmbOptionsCallPut.SelectedItem.ToString();
             string strike = cmbOptionsStrike.SelectedItem.ToString();
+            
+            int Qty = 0;
+            double limitPrice = 0;
+            try
+            {
+                Qty = Convert.ToInt32(txtOptionsQty.Text);
+                if (Qty > 0)
+                {
+                    //1 for MARKET and  2 for LIMIT
+                    int ordType = 0;
 
-            double price = Convert.ToDouble(txtOptionsPrice.Text);
-            int qty = Convert.ToInt32(txtOptionsQty.Text);
-            char action = 'B';
+                    if (cmbOptionsType.SelectedItem.ToString().Equals("MARKET"))
+                    {
+                        ordType = 1;
+                        try
+                        {
+                            limitPrice = Convert.ToDouble(txtOptionsPrice.Text);
+                        }
+                        catch (Exception ex)
+                        {
+                            ShowStatus1("Enter Valid value in Price" + ex.Message);
+                        }
+                    }
+                    else if (cmbOptionsType.SelectedItem.ToString().Equals("LIMIT"))
+                    {
+                        ordType = 2;
+                        try
+                        {
+                            limitPrice = Convert.ToDouble(txtOptionsPrice.Text);
+                        }
+                        catch (Exception ex)
+                        {
+                            ShowStatus1("Enter Valid value in Price" + ex.Message);
+                        }
+                    }
 
-            OrderClient.insertOrder(symbol, expiry, callput, "NOP", strike, price, qty, action, this);
+                    if (ordType == 1 && limitPrice > 0)
+                    {
+                        char action = 'B';
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            OrderClient.insertOrder(symbol, expiry, callput, "NOP", strike, limitPrice, Qty, action, ordType, 0, this);
+                        }
+                    }
+                    else if (ordType == 2 && limitPrice > 0)
+                    {
+                        char action = 'B';
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            OrderClient.insertOrder(symbol, expiry, callput, "NOP", strike, limitPrice, Qty, action, ordType, 0, this);
+                        }
+                    }
+                    else
+                    {
+                        ShowStatus1("Enter Valid value in Price");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowStatus1("Enter Valid number in Qty" + ex.Message);
+            }
         }
 
         private void btnSell_Click(object sender, EventArgs e)
@@ -435,64 +664,145 @@ namespace ScannerWindowApplication
             string callput = cmbOptionsCallPut.SelectedItem.ToString();
             string strike = cmbOptionsStrike.SelectedItem.ToString();
 
-            double price = Convert.ToDouble(txtOptionsPrice.Text);
-            int qty = Convert.ToInt32(txtOptionsQty.Text);
-            char action = 'S';
+            int Qty = 0;
+            double limitPrice = 0;
+            try
+            {
+                Qty = Convert.ToInt32(txtOptionsQty.Text);
+                if (Qty > 0)
+                {
+                    //1 for MARKET and  2 for LIMIT
+                    int ordType = 0;
 
-            OrderClient.insertOrder(symbol, expiry, callput, "NOP", strike, price, qty, action, this);
+                    if (cmbOptionsType.SelectedItem.ToString().Equals("MARKET"))
+                    {
+                        ordType = 1;
+                    }
+                    else if (cmbOptionsType.SelectedItem.ToString().Equals("LIMIT"))
+                    {
+                        ordType = 2;
+                        try
+                        {
+                            limitPrice = Convert.ToDouble(txtOptionsPrice.Text);
+                        }
+                        catch (Exception ex)
+                        {
+                            ShowStatus1("Enter Valid value in Price" + ex.Message);
+                        }
+                    }
+
+                    if (ordType == 1)
+                    {
+                        char action = 'S';
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            OrderClient.insertOrder(symbol, expiry, callput, "NOP", strike, limitPrice, Qty, action, ordType, 0, this);
+                        }
+                    }
+                    else if (ordType == 2 && limitPrice > 0)
+                    {
+                        char action = 'S';
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            OrderClient.insertOrder(symbol, expiry, callput, "NOP", strike, limitPrice, Qty, action, ordType, 0, this);
+                        }
+                    }
+                    else
+                    {
+                        ShowStatus1("Enter Valid value in Price");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowStatus1("Enter Valid number in Qty" + ex.Message);
+            }
         }
 
         private void cmbFuturesExpiry_SelectedIndexChanged(object sender, EventArgs e)
         {
             string Symbol = cmbFutSymbol.SelectedItem.ToString();
-            string Expiry = cmbFutExpiry.SelectedItem.ToString();
-            string instrument = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && (x.Value.Instrument == "FUTSTK" || x.Value.Instrument == "FUTIDX")).Select(x => x.Value.Instrument).Distinct().ToList().First();
+            if (cmbFutExpiry.SelectedItem != null)
+            {
+                string Expiry = cmbFutExpiry.SelectedItem.ToString();
+                string instrument = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && (x.Value.Instrument == "FUTSTK" || x.Value.Instrument == "FUTIDX")).Select(x => x.Value.Instrument).Distinct().ToList().First();
 
-            this.tokenno = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && x.Value.ExpiryDate == Expiry && x.Value.Instrument == instrument).Select(x => x.Key).Distinct().ToList().FirstOrDefault();
-            
-            tabsel = 1;
+                this.tokenno = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && x.Value.ExpiryDate == Expiry && x.Value.Instrument == instrument).Select(x => x.Key).Distinct().ToList().FirstOrDefault();
+                if (ScannerDashboard.dictSecurityCloseMaster.ContainsKey(tokenno))
+                    tokenClosePrice = ScannerDashboard.dictSecurityCloseMaster[tokenno];
+                else
+                    tokenClosePrice = 0;
+
+                tabsel = 1;
+            }
         }
 
         private void cmbOptionsCallPut_SelectedIndexChanged(object sender, EventArgs e)
         {
             string symbol = cmbOptionsSymbol.SelectedItem.ToString();
-            string expiry = cmbOptionsExpiry.SelectedItem.ToString();            
-            string callput = cmbOptionsCallPut.SelectedItem.ToString();
-            
-            loadStrike(symbol, expiry, callput);
+            if (cmbOptionsExpiry.SelectedItem != null)
+            {
+                string expiry = cmbOptionsExpiry.SelectedItem.ToString();
+                if (cmbOptionsCallPut.SelectedItem != null)
+                {
+                    string callput = cmbOptionsCallPut.SelectedItem.ToString();
+                    loadStrike(symbol, expiry, callput);
+                }
+            }
         }
 
         private void cmbOptionsStrike_SelectedIndexChanged(object sender, EventArgs e)
         {
             string Symbol = cmbOptionsSymbol.SelectedItem.ToString();
-            string Expiry = cmbOptionsExpiry.SelectedItem.ToString();
-            string callput = cmbOptionsCallPut.SelectedItem.ToString();
-
-            if (cmbOptionsStrike.Items.Count > 0)
+            if (cmbOptionsExpiry.SelectedItem != null)
             {
-                string strike = cmbOptionsStrike.SelectedItem.ToString();
-                string instrument = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && (x.Value.Instrument == "OPTSTK" || x.Value.Instrument == "OPTIDX")).Select(x => x.Value.Instrument).Distinct().ToList().First();
+                string Expiry = cmbOptionsExpiry.SelectedItem.ToString();
+                if (cmbOptionsCallPut.SelectedItem != null)
+                {
+                    string callput = cmbOptionsCallPut.SelectedItem.ToString();
 
-                this.tokenno = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && x.Value.ExpiryDate == Expiry && x.Value.Instrument == instrument && x.Value.OptType == callput && x.Value.StrikePrice == strike).Select(x => x.Key).Distinct().ToList().First();
-                tabsel = 2;
+                    if (cmbOptionsStrike.Items.Count > 0)
+                    {
+                        if (cmbOptionsStrike.SelectedItem != null)
+                        {
+                            string strike = cmbOptionsStrike.SelectedItem.ToString();
+                            string instrument = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && (x.Value.Instrument == "OPTSTK" || x.Value.Instrument == "OPTIDX")).Select(x => x.Value.Instrument).Distinct().ToList().First();
+
+                            this.tokenno = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && x.Value.ExpiryDate == Expiry && x.Value.Instrument == instrument && x.Value.OptType == callput && x.Value.StrikePrice == strike).Select(x => x.Key).Distinct().ToList().First();
+                            if (ScannerDashboard.dictSecurityCloseMaster.ContainsKey(tokenno))
+                                tokenClosePrice = ScannerDashboard.dictSecurityCloseMaster[tokenno];
+                            else
+                                tokenClosePrice = 0;
+                            tabsel = 2;
+                        }
+                    }
+                }
             }
         }
 
         private void cmbOptionsSymbol_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string symbol = cmbOptionsSymbol.SelectedItem.ToString();
-            string instrument = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == symbol && (x.Value.Instrument == "OPTSTK" || x.Value.Instrument == "OPTIDX")).Select(x => x.Value.Instrument).Distinct().ToList().First();
-            loadExpiry(symbol, instrument);
+            if (cmbOptionsSymbol.SelectedItem != null)
+            {
+                string symbol = cmbOptionsSymbol.SelectedItem.ToString();
+                string instrument = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == symbol && (x.Value.Instrument == "OPTSTK" || x.Value.Instrument == "OPTIDX")).Select(x => x.Value.Instrument).Distinct().ToList().First();
+                loadExpiry(symbol, instrument);
+            }
         }
 
         private void cmbOptionsExpiry_SelectedIndexChanged(object sender, EventArgs e)
         {
             string symbol = cmbOptionsSymbol.SelectedItem.ToString();
-            string expiry = cmbOptionsExpiry.SelectedItem.ToString();
-            if (cmbOptionsCallPut.SelectedItem != null)
+            if (cmbOptionsExpiry.SelectedItem != null)
             {
-                string callput = cmbOptionsCallPut.SelectedItem.ToString();
-                loadStrike(symbol, expiry, callput);
+                string expiry = cmbOptionsExpiry.SelectedItem.ToString();
+                if (cmbOptionsCallPut.SelectedItem != null)
+                {
+                    string callput = cmbOptionsCallPut.SelectedItem.ToString();
+                    loadStrike(symbol, expiry, callput);
+                }
             }
         }
 
@@ -507,49 +817,52 @@ namespace ScannerWindowApplication
             {
                 // Determine which category the item was draged to                
                 {
+                    displayFuture = false;
+
                     // Get references to the category and campaign
+                    string dropTokenno = "";
                     string symbol = "";
                     string expiry = "";
                     string strike = "";
                     string callput = "";
-                    string exch = "";
+                    string instrument = "";
 
                     if (e.Data.GetDataPresent(typeof(DataRowView)))
                     {
                         DataRowView dataRow = (DataRowView)e.Data.GetData(typeof(DataRowView));
-                        symbol = (string)dataRow[1];
-                        expiry = (string)dataRow[2];
-                        strike = (string)dataRow[3];
-                        callput = (string)dataRow[4];
-                        exch = (string)dataRow[5];
+                        dropTokenno = (string)dataRow[0];
+                        SecurityMaster secMaster = ScannerDashboard.dictSecurityMaster[dropTokenno];
+                        symbol = secMaster.Symbol;
+                        expiry = secMaster.ExpiryDate;
+                        strike = secMaster.StrikePrice;
+                        callput = secMaster.OptType;
+                        instrument = secMaster.Instrument;
                     }
                     else if(e.Data.GetDataPresent(typeof(string)))
                     {
-                        string rowString = (string)e.Data.GetData(typeof(string));
-                        string[] dataRow = rowString.Split(',');
-                        
-                        symbol = (string)dataRow[0];
-                        expiry = (string)dataRow[1];
-                        strike = (string)dataRow[2];
-                        callput = (string)dataRow[3];
-                        exch = (string)dataRow[4];
+                        dropTokenno = (string)e.Data.GetData(typeof(string));
+                        SecurityMaster secMaster = ScannerDashboard.dictSecurityMaster[dropTokenno];
+                        symbol = secMaster.Symbol;
+                        expiry = secMaster.ExpiryDate;
+                        strike = secMaster.StrikePrice;
+                        callput = secMaster.OptType;
+                        instrument = secMaster.Instrument;
                     }
 
-                    if (exch == "NFO")
-                    {
-                        cmbFutSymbol.SelectedItem = symbol;
-                        loadExpiry(symbol, "NFO");
-                        cmbFutExpiry.SelectedItem = expiry;
+                    
 
-                        cmbOptionsStrike.Items.Clear();
-                        cmbOptionsCallPut.Items.Clear();
-                        cmbOptionsExpiry.Items.Clear();
-                        cmbOptionsSymbol.Items.Clear();
+                    if (instrument == "EQ")
+                    {                        
+                        //clear the old data for options tab
+                        //cmbOptionsStrike.Items.Clear();
+                        //cmbOptionsCallPut.Items.Clear();
+                        //cmbOptionsExpiry.Items.Clear();
+                        //cmbOptionsSymbol.Items.Clear();
 
-                        cmbOptionsStrike.Text = "";
-                        cmbOptionsCallPut.Text = "";
-                        cmbOptionsExpiry.Text = "";
-                        cmbOptionsSymbol.Text = "";
+                        cmbOptionsStrike.SelectedIndex = -1;
+                        cmbOptionsCallPut.SelectedIndex = -1;
+                        cmbOptionsExpiry.SelectedIndex = -1;
+                        cmbOptionsSymbol.SelectedIndex = -1;
 
                         txtOptionsChange.Text = "";
                         txtOptionsPercentChange.Text = "";
@@ -557,36 +870,144 @@ namespace ScannerWindowApplication
                         txtOptionsAskPrice.Text = "";
                         txtOptionsBidPrice.Text = "";
                         txtOptionsBidSize.Text = "";
-
+                        txtOptionsClosePrice.Text = "";
+                        txtOptionsLTP.Text = "";
+                        txtOptionsLTQ.Text = "";
+                        txtOptionsPrice.Text = "";
+                        txtOptionsQty.Text = "";
+                        txtOptionsSpread.Text = "";
                         strike = "0";
                         callput = "";
-                        exch = "NFO";
-                        //this.feedkey = symbol + "," + expiry + "," + strike + "," + callput + "," + exch;
+
+                        //clear the old data for futures tab
+                        //cmbFutExpiry.Items.Clear();
+                        //cmbFutSymbol.Items.Clear();
+                        cmbFutExpiry.SelectedIndex = -1;
+                        cmbFutSymbol.SelectedIndex = -1;
+                        txtFutAskPz.Text = "";
+                        txtFutAskSz.Text = "";
+                        txtFutBidPz.Text = "";
+                        txtFutBidSz.Text = "";
+                        txtFutChange.Text = "";
+                        txtFutClosePrice.Text = "";
+                        txtFutLTQ.Text = "";
+                        txtFutLTP.Text = "";
+                        txtFutPercentChange.Text = "";
+                        txtFutSpread.Text = "";
+                        txtFuturesLimit.Text = "";
+                        txtFuturesQty.Text = "";
+
+                        dgvFuturesPrices.Rows.Clear();
+                        dgvFuturesTrade.Rows.Clear();
+
+                        dgvOptionsPrices.Rows.Clear();
+                        dgvOptionsTrade.Rows.Clear();
+
+                        cmbStocksSymbol.SelectedItem = symbol;
+
+                        tabsel = 0;
+                        tabControl1.SelectedIndex = 0;
+                    }
+                    if (instrument == "FUTSTK" || instrument == "FUTIDX")
+                    {                        
+                        cmbOptionsStrike.Items.Clear();
+                        //cmbOptionsCallPut.Items.Clear();
+                        cmbOptionsExpiry.Items.Clear();
+                        //cmbOptionsSymbol.Items.Clear();
+
+                        cmbOptionsStrike.SelectedIndex = -1;
+                        cmbOptionsCallPut.SelectedIndex = -1;
+                        cmbOptionsExpiry.SelectedIndex = -1;
+                        cmbOptionsSymbol.SelectedIndex = -1;
+
+                        txtOptionsChange.Text = "";
+                        txtOptionsPercentChange.Text = "";
+                        txtOptionsAskSize.Text = "";
+                        txtOptionsAskPrice.Text = "";
+                        txtOptionsBidPrice.Text = "";
+                        txtOptionsBidSize.Text = "";
+                        txtOptionsClosePrice.Text = "";
+                        txtOptionsLTP.Text = "";
+                        txtOptionsLTQ.Text = "";
+                        txtOptionsPrice.Text = "";
+                        txtOptionsQty.Text = "";
+                        txtOptionsSpread.Text = "";
+                        strike = "0";
+                        callput = "";
+
+                        // clear the stocks data
+                        cmbStocksSymbol.SelectedIndex = -1;
+                        txtStocksAskPrice.Text = "";
+                        txtStocksAskSize.Text = "";
+                        txtStocksBidPrice.Text = "";
+                        txtStocksBidSize.Text = "";
+                        txtStocksChange.Text = "";
+                        txtStocksClose.Text = "";
+                        txtStocksLimit.Text = "";
+                        txtStocksLTP.Text = "";
+                        txtStocksLTQ.Text = "";
+                        txtStocksPercentChange.Text = "";
+                        txtStocksQty.Text = "";
+                        txtStocksSpread.Text = "";
+
+                        cmbFutSymbol.SelectedItem = symbol;
+                        loadExpiry(symbol, instrument);
+                        cmbFutExpiry.SelectedItem = expiry;
+
+                        dgvStocksPrices.Rows.Clear();
+                        dgvStocksTrades.Rows.Clear();
+
+                        dgvOptionsPrices.Rows.Clear();
+                        dgvOptionsTrade.Rows.Clear();
                         
                         tabsel = 1;
                         tabControl1.SelectedIndex = 1;
                     }
-                    else if (exch == "NOP")
+                    else if (instrument == "OPTSTK" || instrument == "OPTIDX")
                     {
-                        cmbFutExpiry.Items.Clear();
-                        cmbFutSymbol.Items.Clear();
-                        cmbFutExpiry.Text = "";
-                        cmbFutSymbol.Text = "";
-
-                        txtFutChange.Text = "";
-                        txtFutLTQ.Text = "";
+                        //cmbFutExpiry.Items.Clear();
+                        //cmbFutSymbol.Items.Clear();
+                        cmbFutExpiry.SelectedIndex = -1;
+                        cmbFutSymbol.SelectedIndex = -1;
                         txtFutAskPz.Text = "";
-                        txtFutBidSz.Text = "";
-                        txtFuturesLimit.Text = "";                        
+                        txtFutAskSz.Text = "";
                         txtFutBidPz.Text = "";
-                        txtFutPercentChange.Text = "";
+                        txtFutBidSz.Text = "";
+                        txtFutChange.Text = "";
+                        txtFutClosePrice.Text = "";
+                        txtFutLTQ.Text = "";
                         txtFutLTP.Text = "";
+                        txtFutPercentChange.Text = "";
+                        txtFutSpread.Text = "";
+                        txtFuturesLimit.Text = "";
+                        txtFuturesQty.Text = "";
 
-                        //this.feedkey = symbol + "," + expiry + "," + strike + "," + callput + "," + exch;
-                        
+                        cmbStocksSymbol.SelectedIndex = -1;
+                        txtStocksAskPrice.Text = "";
+                        txtStocksAskSize.Text = "";
+                        txtStocksBidPrice.Text = "";
+                        txtStocksBidSize.Text = "";
+                        txtStocksChange.Text = "";
+                        txtStocksClose.Text = "";
+                        txtStocksLimit.Text = "";
+                        txtStocksLTP.Text = "";
+                        txtStocksLTQ.Text = "";
+                        txtStocksPercentChange.Text = "";
+                        txtStocksQty.Text = "";
+                        txtStocksSpread.Text = "";
+
+                        dgvStocksPrices.Rows.Clear();
+                        dgvStocksTrades.Rows.Clear();
+
+                        dgvFuturesPrices.Rows.Clear();
+                        dgvFuturesTrade.Rows.Clear();
+
                         cmbOptionsSymbol.SelectedItem = symbol;
+                        loadExpiry(symbol, instrument);
                         cmbOptionsExpiry.SelectedItem = expiry;
                         cmbOptionsCallPut.SelectedItem = callput;
+
+                        loadStrike(symbol, expiry, callput);
 
                         if (cmbOptionsStrike.Items.Count > 0)
                         {
@@ -596,6 +1017,9 @@ namespace ScannerWindowApplication
                             tabControl1.SelectedIndex = 2;
                         }                        
                     }
+
+                    displayFuture = true;
+
                 }
             }
         }
@@ -608,17 +1032,23 @@ namespace ScannerWindowApplication
 
         private void button1_Click(object sender, EventArgs e)
         {
-            String value = "";
-            FillSubscriber.dictFillDetails.TryGetValue(txtOptionsDisplayQty.Text, out value);
-            MessageBox.Show(value);
+
         }
 
         private void cmbStocksSymbol_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string Symbol = cmbStocksSymbol.SelectedItem.ToString();
-            string instrument = "EQ";
-            this.tokenno = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && x.Value.Instrument == instrument).Select(x => x.Key).Distinct().ToList().FirstOrDefault();
-            tabsel = 0;
+            if (cmbStocksSymbol.SelectedItem != null)
+            {
+                string Symbol = cmbStocksSymbol.SelectedItem.ToString();
+                string instrument = "EQ";
+                this.tokenno = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && x.Value.Instrument == instrument).Select(x => x.Key).Distinct().ToList().FirstOrDefault();
+                if (ScannerDashboard.dictSecurityCloseMaster.ContainsKey(tokenno))
+                    tokenClosePrice = ScannerDashboard.dictSecurityCloseMaster[tokenno];
+                else
+                    tokenClosePrice = 0;
+
+                tabsel = 0;
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -631,6 +1061,351 @@ namespace ScannerWindowApplication
         private void TradingBoxV2_FormClosing(object sender, FormClosingEventArgs e)
         {
             flag = false;
+        }
+
+        private void btnStocksBuy_Click(object sender, EventArgs e)
+        {
+            string symbol = cmbStocksSymbol.SelectedItem.ToString();
+            int Qty = 0;
+            double limitPrice = 0;
+            try
+            {
+                Qty = Convert.ToInt32(txtStocksQty.Text);
+                if (Qty > 0)
+                {
+                    //1 for MARKET and  2 for LIMIT
+                    int ordType = 0;
+
+                    if (cmbStocksType.SelectedItem.ToString().Equals("MARKET"))
+                    {
+                        ordType = 1;
+                    }
+                    else if (cmbStocksType.SelectedItem.ToString().Equals("LIMIT"))
+                    {
+                        ordType = 2;                        
+                    }
+
+                    try
+                    {
+                        limitPrice = Convert.ToDouble(txtStocksLimit.Text);
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowStatus1("Enter Valid value in Price" + ex.Message);
+                    }
+
+                    if (ordType == 1 && limitPrice > 0)
+                    {
+                        char action = 'B';
+                        lastaction = action;
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty +" Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {                            
+                            OrderClient.insertOrder(symbol, "20170223", "NA", "STK", "0", limitPrice, Qty, action, ordType, 0, this);
+                        }
+                    }
+                    else if (ordType == 2 && limitPrice > 0)
+                    {
+                        char action = 'B';
+                        lastaction = action;
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            OrderClient.insertOrder(symbol, "20170223", "NA", "STK", "0", limitPrice, Qty, action, ordType, 0, this);
+                        }
+                    }
+                    else
+                    {
+                        ShowStatus1("Enter Valid value in Price");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowStatus1("Enter Valid number in Qty" + ex.Message);
+            }
+        }
+
+        private void btnStocksSell_Click(object sender, EventArgs e)
+        {
+            string symbol = cmbStocksSymbol.SelectedItem.ToString();
+            int Qty = 0;
+            double limitPrice = 0;
+            try
+            {
+                Qty = Convert.ToInt32(txtStocksQty.Text);
+                if (Qty > 0)
+                {
+                    //1 for MARKET and  2 for LIMIT
+                    int ordType = 0;
+
+                    if (cmbStocksType.SelectedItem.ToString().Equals("MARKET"))
+                    {
+                        ordType = 1;
+                    }
+                    else if (cmbStocksType.SelectedItem.ToString().Equals("LIMIT"))
+                    {
+                        ordType = 2;                        
+                    }
+
+                    try
+                    {
+                        limitPrice = Convert.ToDouble(txtStocksLimit.Text);
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowStatus1("Enter Valid value in Price" + ex.Message);
+                    }
+
+                    if (ordType == 1 && limitPrice > 0)
+                    {
+                        char action = 'S';
+                        lastaction = action;
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            OrderClient.insertOrder(symbol, "20170223", "NA", "STK", "0", limitPrice, Qty, action, ordType, 0, this);
+                        }
+                    }
+                    else if (ordType == 2 && limitPrice > 0)
+                    {
+                        char action = 'S';
+                        lastaction = action;
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            OrderClient.insertOrder(symbol, "20170223", "NA", "STK", "0", limitPrice, Qty, action, ordType, 0, this);
+                        }
+                    }
+                    else
+                    {
+                        ShowStatus1("Enter Valid value in Price");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {                
+                ShowStatus1("Enter Valid number in Qty" + ex.Message);
+            }
+        }
+
+        private void btnStocksCancel_Click(object sender, EventArgs e)
+        {
+            string symbol = cmbStocksSymbol.SelectedItem.ToString();
+            OrderClient.cancelOrder(symbol, orderid);
+        }
+
+        private void btnFuturesCancel_Click(object sender, EventArgs e)
+        {
+            string symbol = cmbFutSymbol.SelectedItem.ToString();
+            OrderClient.cancelOrder(symbol, orderid);
+        }
+
+        private void btnModify_Click(object sender, EventArgs e)
+        {
+            string symbol = cmbStocksSymbol.SelectedItem.ToString();
+            int Qty = 0;
+            double limitPrice = 0;
+            try
+            {
+                Qty = Convert.ToInt32(txtStocksQty.Text);
+                if (Qty > 0)
+                {
+                    //1 for MARKET and  2 for LIMIT
+                    int ordType = 0;
+
+                    if (cmbStocksType.SelectedItem.ToString().Equals("MARKET"))
+                    {
+                        ordType = 1;
+                    }
+                    else if (cmbStocksType.SelectedItem.ToString().Equals("LIMIT"))
+                    {
+                        ordType = 2;
+                    }
+
+                    try
+                    {
+                        limitPrice = Convert.ToDouble(txtStocksLimit.Text);
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowStatus1("Enter Valid value in Price" + ex.Message);
+                    }
+
+                    if (ordType == 1 && limitPrice > 0)
+                    {                        
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {                            
+                            OrderClient.modifyOrder(Convert.ToInt32(orderid), symbol, "20170223", "NA", "STK", "0", limitPrice, Qty, lastaction, ordType, 0, this);
+                        }
+                    }
+                    else if (ordType == 2 && limitPrice > 0)
+                    {                        
+                        DialogResult dialogResult = MessageBox.Show("Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            OrderClient.modifyOrder(Convert.ToInt32(orderid), symbol, "20170223", "NA", "STK", "0", limitPrice, Qty, lastaction, ordType, 0, this);
+                        }
+                    }
+                    else
+                    {
+                        ShowStatus1("Enter Valid value in Price");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowStatus1("Enter Valid number in Qty" + ex.Message);
+            }
+        }
+
+        private void btnFutureModify_Click(object sender, EventArgs e)
+        {
+            string symbol = cmbFutSymbol.SelectedItem.ToString();
+            string futExpiry = cmbFutExpiry.SelectedItem.ToString();
+            try
+            {
+                DateTime dtfutExpiry = DateTime.ParseExact(futExpiry, "yyyy-MM-dd", null);
+                futExpiry = dtfutExpiry.ToString("yyyyMMdd");
+                int Qty = 0;
+                double limitPrice = 0;
+                try
+                {
+                    Qty = Convert.ToInt32(txtFuturesQty.Text);
+                    if (Qty > 0)
+                    {
+                        //1 for MARKET and  2 for LIMIT
+                        int ordType = 0;
+
+                        if (cmbFuturesType.SelectedItem.ToString().Equals("MARKET"))
+                        {
+                            ordType = 1;
+                        }
+                        else if (cmbFuturesType.SelectedItem.ToString().Equals("LIMIT"))
+                        {
+                            ordType = 2;
+                        }
+
+                        try
+                        {
+                            limitPrice = Convert.ToDouble(txtFuturesLimit.Text);
+                        }
+                        catch (Exception ex)
+                        {
+                            ShowStatus1("Enter Valid value in Price" + ex.Message);
+                        }
+
+                        if (ordType == 1 && limitPrice > 0)
+                        {
+                            DialogResult dialogResult = MessageBox.Show("Modify Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                            if (dialogResult == DialogResult.Yes)
+                            {
+                                //OrderClient.modifyOrder(Convert.ToInt32(orderid), symbol, "20170223", "NA", "FUT", "0", limitPrice, Qty, lastaction, ordType, 0, this);
+                                OrderClient.modifyOrder(Convert.ToInt32(orderid), symbol, futExpiry, "NA", "FUT", "0", limitPrice, Qty, lastaction, ordType, 0, this);
+                            }
+                        }
+                        else if (ordType == 2 && limitPrice > 0)
+                        {
+                            DialogResult dialogResult = MessageBox.Show("Modify Buy Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice, "Some Title", MessageBoxButtons.YesNo);
+                            if (dialogResult == DialogResult.Yes)
+                            {
+                                OrderClient.modifyOrder(Convert.ToInt32(orderid), symbol, futExpiry, "NA", "FUT", "0", limitPrice, Qty, lastaction, ordType, 0, this);
+                            }
+                        }
+                        else
+                        {
+                            ShowStatus1("Enter Valid value in Price");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowStatus1("Enter Valid number in Qty" + ex.Message);
+                }
+            }
+            catch(Exception ex)
+            {
+                ShowStatus1("Select Expiry for the Symbol : " + ex.Message);
+            }
+        }
+
+        private void btnOptionCancel_Click(object sender, EventArgs e)
+        {
+            string symbol = cmbOptionsSymbol.SelectedItem.ToString();
+            OrderClient.cancelOrder(symbol, orderid);
+        }
+
+        private void btnOptionModify_Click(object sender, EventArgs e)
+        {
+            string symbol = cmbOptionsSymbol.SelectedItem.ToString();
+
+            string optExpiry = cmbOptionsExpiry.SelectedItem.ToString();
+            string callput = cmbOptionsCallPut.SelectedItem.ToString();
+            string strike = cmbOptionsStrike.SelectedItem.ToString();
+            try
+            {
+                DateTime dtOptExpiry = DateTime.ParseExact(optExpiry, "yyyy-MM-dd", null);
+                optExpiry = dtOptExpiry.ToString("yyyyMMdd");
+                int Qty = 0;
+                double limitPrice = 0;
+                try
+                {
+                    Qty = Convert.ToInt32(txtOptionsQty.Text);
+                    if (Qty > 0)
+                    {
+                        //1 for MARKET and  2 for LIMIT
+                        int ordType = 0;
+
+                        if (cmbOptionsType.SelectedItem.ToString().Equals("MARKET"))
+                        {
+                            ordType = 1;
+                        }
+                        else if (cmbOptionsType.SelectedItem.ToString().Equals("LIMIT"))
+                        {
+                            ordType = 2;
+                        }
+
+                        try
+                        {
+                            limitPrice = Convert.ToDouble(txtOptionsPrice.Text);
+                        }
+                        catch (Exception ex)
+                        {
+                            ShowStatus1("Enter Valid value in Price" + ex.Message);
+                        }
+
+                        if (ordType == 1 && limitPrice > 0)
+                        {
+                            DialogResult dialogResult = MessageBox.Show("Modify Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice + " expiry = " + optExpiry + " callput : " + callput + " strike: " + strike, "Some Title", MessageBoxButtons.YesNo);
+                            if (dialogResult == DialogResult.Yes)
+                            {
+                                OrderClient.modifyOrder(Convert.ToInt32(orderid), symbol, optExpiry, callput, "OPT", strike, limitPrice, Qty, lastaction, ordType, 0, this);
+                            }
+                        }
+                        else if (ordType == 2 && limitPrice > 0)
+                        {
+                            DialogResult dialogResult = MessageBox.Show("Modify Order Symbol = " + symbol + " Qty = " + Qty + " Price = " + limitPrice + " expiry = " + optExpiry + " callput : " +callput + " strike: " + strike, "Some Title", MessageBoxButtons.YesNo);
+                            if (dialogResult == DialogResult.Yes)
+                            {
+                                OrderClient.modifyOrder(Convert.ToInt32(orderid), symbol, optExpiry, callput, "OPT", strike, limitPrice, Qty, lastaction, ordType, 0, this);
+                            }
+                        }
+                        else
+                        {
+                            ShowStatus1("Enter Valid value in Price");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowStatus1("Enter Valid number in Qty" + ex.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowStatus1("Select Expiry for the Symbol : " + ex.Message);
+            }
         }
     }
 }

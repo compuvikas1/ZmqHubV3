@@ -34,8 +34,8 @@ namespace ScannerWindowApplication
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPageStock = new System.Windows.Forms.TabPage();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.btnModify = new System.Windows.Forms.Button();
             this.btnStocksCancel = new System.Windows.Forms.Button();
-            this.btnStocksShort = new System.Windows.Forms.Button();
             this.btnStocksSell = new System.Windows.Forms.Button();
             this.btnStocksBuy = new System.Windows.Forms.Button();
             this.cmbStocksTif = new System.Windows.Forms.ComboBox();
@@ -78,10 +78,12 @@ namespace ScannerWindowApplication
             this.dgvStocksTrades = new System.Windows.Forms.DataGridView();
             this.tabPageFuture = new System.Windows.Forms.TabPage();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+            this.btnFutureModify = new System.Windows.Forms.Button();
+            this.txtFutClosePrice = new System.Windows.Forms.TextBox();
+            this.label21 = new System.Windows.Forms.Label();
             this.cmbFutExpiry = new System.Windows.Forms.ComboBox();
             this.label31 = new System.Windows.Forms.Label();
             this.btnFuturesCancel = new System.Windows.Forms.Button();
-            this.btnFuturesShort = new System.Windows.Forms.Button();
             this.btnFuturesSell = new System.Windows.Forms.Button();
             this.btnFuturesBuy = new System.Windows.Forms.Button();
             this.cmbFuturesTif = new System.Windows.Forms.ComboBox();
@@ -122,7 +124,13 @@ namespace ScannerWindowApplication
             this.dgvFuturesTrade = new System.Windows.Forms.DataGridView();
             this.tabPageOption = new System.Windows.Forms.TabPage();
             this.splitContainer5 = new System.Windows.Forms.SplitContainer();
-            this.txtOptionsDisplayQty = new System.Windows.Forms.TextBox();
+            this.btnOptionCancel = new System.Windows.Forms.Button();
+            this.btnOptionModify = new System.Windows.Forms.Button();
+            this.cmbOptionsType = new System.Windows.Forms.ComboBox();
+            this.txtOptionsLTQ = new System.Windows.Forms.TextBox();
+            this.txtOptionsLTP = new System.Windows.Forms.TextBox();
+            this.txtOptionsClosePrice = new System.Windows.Forms.TextBox();
+            this.txtOptionsSpread = new System.Windows.Forms.TextBox();
             this.btnOptionsSell = new System.Windows.Forms.Button();
             this.txtOptionsPrice = new System.Windows.Forms.TextBox();
             this.txtOptionsQty = new System.Windows.Forms.TextBox();
@@ -133,7 +141,7 @@ namespace ScannerWindowApplication
             this.cmbOptionsAccount = new System.Windows.Forms.ComboBox();
             this.cmbOptionsTif = new System.Windows.Forms.ComboBox();
             this.cmbOptionsOC = new System.Windows.Forms.ComboBox();
-            this.label40 = new System.Windows.Forms.Label();
+            this.Type = new System.Windows.Forms.Label();
             this.label39 = new System.Windows.Forms.Label();
             this.label38 = new System.Windows.Forms.Label();
             this.label37 = new System.Windows.Forms.Label();
@@ -163,6 +171,8 @@ namespace ScannerWindowApplication
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.button2 = new System.Windows.Forms.Button();
             this.richTextBox2 = new System.Windows.Forms.RichTextBox();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.StatusLabelMessage1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.tabControl1.SuspendLayout();
             this.tabPageStock.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -198,6 +208,7 @@ namespace ScannerWindowApplication
             ((System.ComponentModel.ISupportInitialize)(this.dgvOptionsPrices)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvOptionsTrade)).BeginInit();
             this.tabPage1.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -212,7 +223,7 @@ namespace ScannerWindowApplication
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(853, 508);
+            this.tabControl1.Size = new System.Drawing.Size(853, 513);
             this.tabControl1.TabIndex = 0;
             this.tabControl1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.tabControl1_MouseDown);
             // 
@@ -224,7 +235,7 @@ namespace ScannerWindowApplication
             this.tabPageStock.Location = new System.Drawing.Point(4, 24);
             this.tabPageStock.Name = "tabPageStock";
             this.tabPageStock.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageStock.Size = new System.Drawing.Size(845, 480);
+            this.tabPageStock.Size = new System.Drawing.Size(845, 426);
             this.tabPageStock.TabIndex = 0;
             this.tabPageStock.Text = "Stocks";
             // 
@@ -238,8 +249,8 @@ namespace ScannerWindowApplication
             // splitContainer1.Panel1
             // 
             this.splitContainer1.Panel1.AllowDrop = true;
+            this.splitContainer1.Panel1.Controls.Add(this.btnModify);
             this.splitContainer1.Panel1.Controls.Add(this.btnStocksCancel);
-            this.splitContainer1.Panel1.Controls.Add(this.btnStocksShort);
             this.splitContainer1.Panel1.Controls.Add(this.btnStocksSell);
             this.splitContainer1.Panel1.Controls.Add(this.btnStocksBuy);
             this.splitContainer1.Panel1.Controls.Add(this.cmbStocksTif);
@@ -279,9 +290,19 @@ namespace ScannerWindowApplication
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
-            this.splitContainer1.Size = new System.Drawing.Size(839, 474);
-            this.splitContainer1.SplitterDistance = 254;
+            this.splitContainer1.Size = new System.Drawing.Size(839, 420);
+            this.splitContainer1.SplitterDistance = 200;
             this.splitContainer1.TabIndex = 0;
+            // 
+            // btnModify
+            // 
+            this.btnModify.Location = new System.Drawing.Point(384, 135);
+            this.btnModify.Name = "btnModify";
+            this.btnModify.Size = new System.Drawing.Size(62, 23);
+            this.btnModify.TabIndex = 70;
+            this.btnModify.Text = "Modify";
+            this.btnModify.UseVisualStyleBackColor = true;
+            this.btnModify.Click += new System.EventHandler(this.btnModify_Click);
             // 
             // btnStocksCancel
             // 
@@ -292,16 +313,7 @@ namespace ScannerWindowApplication
             this.btnStocksCancel.TabIndex = 69;
             this.btnStocksCancel.Text = "Cancel";
             this.btnStocksCancel.UseVisualStyleBackColor = true;
-            // 
-            // btnStocksShort
-            // 
-            this.btnStocksShort.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold);
-            this.btnStocksShort.Location = new System.Drawing.Point(383, 132);
-            this.btnStocksShort.Name = "btnStocksShort";
-            this.btnStocksShort.Size = new System.Drawing.Size(63, 23);
-            this.btnStocksShort.TabIndex = 68;
-            this.btnStocksShort.Text = "Short";
-            this.btnStocksShort.UseVisualStyleBackColor = true;
+            this.btnStocksCancel.Click += new System.EventHandler(this.btnStocksCancel_Click);
             // 
             // btnStocksSell
             // 
@@ -312,6 +324,7 @@ namespace ScannerWindowApplication
             this.btnStocksSell.TabIndex = 67;
             this.btnStocksSell.Text = "Sell";
             this.btnStocksSell.UseVisualStyleBackColor = true;
+            this.btnStocksSell.Click += new System.EventHandler(this.btnStocksSell_Click);
             // 
             // btnStocksBuy
             // 
@@ -326,14 +339,11 @@ namespace ScannerWindowApplication
             // 
             // cmbStocksTif
             // 
+            this.cmbStocksTif.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbStocksTif.FormattingEnabled = true;
             this.cmbStocksTif.Items.AddRange(new object[] {
             "DAY",
-            "GTC",
-            "OPG",
-            "IOC",
-            "GTD",
-            "DTC"});
+            "IOC"});
             this.cmbStocksTif.Location = new System.Drawing.Point(306, 132);
             this.cmbStocksTif.Name = "cmbStocksTif";
             this.cmbStocksTif.Size = new System.Drawing.Size(47, 21);
@@ -341,7 +351,11 @@ namespace ScannerWindowApplication
             // 
             // cmbStocksType
             // 
+            this.cmbStocksType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbStocksType.FormattingEnabled = true;
+            this.cmbStocksType.Items.AddRange(new object[] {
+            "LIMIT",
+            "MARKET"});
             this.cmbStocksType.Location = new System.Drawing.Point(232, 132);
             this.cmbStocksType.Name = "cmbStocksType";
             this.cmbStocksType.Size = new System.Drawing.Size(61, 21);
@@ -359,6 +373,7 @@ namespace ScannerWindowApplication
             // 
             // cmbStocksVenue
             // 
+            this.cmbStocksVenue.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbStocksVenue.FormattingEnabled = true;
             this.cmbStocksVenue.Items.AddRange(new object[] {
             "NSE"});
@@ -584,6 +599,7 @@ namespace ScannerWindowApplication
             // cmbStocksSymbol
             // 
             this.cmbStocksSymbol.DropDownHeight = 110;
+            this.cmbStocksSymbol.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbStocksSymbol.FormattingEnabled = true;
             this.cmbStocksSymbol.IntegralHeight = false;
             this.cmbStocksSymbol.ItemHeight = 13;
@@ -679,7 +695,7 @@ namespace ScannerWindowApplication
             this.tabPageFuture.Location = new System.Drawing.Point(4, 24);
             this.tabPageFuture.Name = "tabPageFuture";
             this.tabPageFuture.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageFuture.Size = new System.Drawing.Size(845, 480);
+            this.tabPageFuture.Size = new System.Drawing.Size(845, 426);
             this.tabPageFuture.TabIndex = 1;
             this.tabPageFuture.Text = "Futures";
             // 
@@ -693,10 +709,12 @@ namespace ScannerWindowApplication
             // splitContainer3.Panel1
             // 
             this.splitContainer3.Panel1.AllowDrop = true;
+            this.splitContainer3.Panel1.Controls.Add(this.btnFutureModify);
+            this.splitContainer3.Panel1.Controls.Add(this.txtFutClosePrice);
+            this.splitContainer3.Panel1.Controls.Add(this.label21);
             this.splitContainer3.Panel1.Controls.Add(this.cmbFutExpiry);
             this.splitContainer3.Panel1.Controls.Add(this.label31);
             this.splitContainer3.Panel1.Controls.Add(this.btnFuturesCancel);
-            this.splitContainer3.Panel1.Controls.Add(this.btnFuturesShort);
             this.splitContainer3.Panel1.Controls.Add(this.btnFuturesSell);
             this.splitContainer3.Panel1.Controls.Add(this.btnFuturesBuy);
             this.splitContainer3.Panel1.Controls.Add(this.cmbFuturesTif);
@@ -734,12 +752,41 @@ namespace ScannerWindowApplication
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.splitContainer4);
-            this.splitContainer3.Size = new System.Drawing.Size(839, 474);
-            this.splitContainer3.SplitterDistance = 184;
+            this.splitContainer3.Size = new System.Drawing.Size(839, 420);
+            this.splitContainer3.SplitterDistance = 163;
             this.splitContainer3.TabIndex = 0;
+            // 
+            // btnFutureModify
+            // 
+            this.btnFutureModify.Location = new System.Drawing.Point(431, 134);
+            this.btnFutureModify.Name = "btnFutureModify";
+            this.btnFutureModify.Size = new System.Drawing.Size(63, 23);
+            this.btnFutureModify.TabIndex = 109;
+            this.btnFutureModify.Text = "Modify";
+            this.btnFutureModify.UseVisualStyleBackColor = true;
+            this.btnFutureModify.Click += new System.EventHandler(this.btnFutureModify_Click);
+            // 
+            // txtFutClosePrice
+            // 
+            this.txtFutClosePrice.BackColor = System.Drawing.SystemColors.Control;
+            this.txtFutClosePrice.Enabled = false;
+            this.txtFutClosePrice.Location = new System.Drawing.Point(431, 72);
+            this.txtFutClosePrice.Name = "txtFutClosePrice";
+            this.txtFutClosePrice.Size = new System.Drawing.Size(68, 21);
+            this.txtFutClosePrice.TabIndex = 108;
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(382, 74);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(43, 15);
+            this.label21.TabIndex = 107;
+            this.label21.Text = "Close";
             // 
             // cmbFutExpiry
             // 
+            this.cmbFutExpiry.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbFutExpiry.FormattingEnabled = true;
             this.cmbFutExpiry.Location = new System.Drawing.Point(241, 13);
             this.cmbFutExpiry.Name = "cmbFutExpiry";
@@ -764,15 +811,7 @@ namespace ScannerWindowApplication
             this.btnFuturesCancel.TabIndex = 104;
             this.btnFuturesCancel.Text = "Cancel";
             this.btnFuturesCancel.UseVisualStyleBackColor = true;
-            // 
-            // btnFuturesShort
-            // 
-            this.btnFuturesShort.Location = new System.Drawing.Point(431, 138);
-            this.btnFuturesShort.Name = "btnFuturesShort";
-            this.btnFuturesShort.Size = new System.Drawing.Size(63, 23);
-            this.btnFuturesShort.TabIndex = 103;
-            this.btnFuturesShort.Text = "Short";
-            this.btnFuturesShort.UseVisualStyleBackColor = true;
+            this.btnFuturesCancel.Click += new System.EventHandler(this.btnFuturesCancel_Click);
             // 
             // btnFuturesSell
             // 
@@ -796,14 +835,11 @@ namespace ScannerWindowApplication
             // 
             // cmbFuturesTif
             // 
+            this.cmbFuturesTif.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbFuturesTif.FormattingEnabled = true;
             this.cmbFuturesTif.Items.AddRange(new object[] {
             "DAY",
-            "GTC",
-            "OPG",
-            "IOC",
-            "GTD",
-            "DTC"});
+            "IOC"});
             this.cmbFuturesTif.Location = new System.Drawing.Point(308, 132);
             this.cmbFuturesTif.Name = "cmbFuturesTif";
             this.cmbFuturesTif.Size = new System.Drawing.Size(57, 23);
@@ -812,7 +848,7 @@ namespace ScannerWindowApplication
             // cmbFuturesType
             // 
             this.cmbFuturesType.BackColor = System.Drawing.SystemColors.Control;
-            this.cmbFuturesType.Enabled = false;
+            this.cmbFuturesType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbFuturesType.FormattingEnabled = true;
             this.cmbFuturesType.Items.AddRange(new object[] {
             "LIMIT",
@@ -833,6 +869,7 @@ namespace ScannerWindowApplication
             // 
             // cmbFuturesVenue
             // 
+            this.cmbFuturesVenue.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbFuturesVenue.FormattingEnabled = true;
             this.cmbFuturesVenue.Items.AddRange(new object[] {
             "NSE"});
@@ -1047,6 +1084,7 @@ namespace ScannerWindowApplication
             // cmbFutSymbol
             // 
             this.cmbFutSymbol.DropDownHeight = 110;
+            this.cmbFutSymbol.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbFutSymbol.FormattingEnabled = true;
             this.cmbFutSymbol.IntegralHeight = false;
             this.cmbFutSymbol.ItemHeight = 15;
@@ -1078,7 +1116,7 @@ namespace ScannerWindowApplication
             // splitContainer4.Panel2
             // 
             this.splitContainer4.Panel2.Controls.Add(this.dgvFuturesTrade);
-            this.splitContainer4.Size = new System.Drawing.Size(839, 286);
+            this.splitContainer4.Size = new System.Drawing.Size(839, 253);
             this.splitContainer4.SplitterDistance = 444;
             this.splitContainer4.TabIndex = 0;
             // 
@@ -1096,7 +1134,7 @@ namespace ScannerWindowApplication
             this.dgvFuturesPrices.Location = new System.Drawing.Point(0, 0);
             this.dgvFuturesPrices.Name = "dgvFuturesPrices";
             this.dgvFuturesPrices.ReadOnly = true;
-            this.dgvFuturesPrices.Size = new System.Drawing.Size(444, 286);
+            this.dgvFuturesPrices.Size = new System.Drawing.Size(444, 253);
             this.dgvFuturesPrices.TabIndex = 0;
             // 
             // dataGridViewTextBoxColumn11
@@ -1132,7 +1170,7 @@ namespace ScannerWindowApplication
             this.dgvFuturesTrade.Location = new System.Drawing.Point(0, 0);
             this.dgvFuturesTrade.Name = "dgvFuturesTrade";
             this.dgvFuturesTrade.ReadOnly = true;
-            this.dgvFuturesTrade.Size = new System.Drawing.Size(391, 286);
+            this.dgvFuturesTrade.Size = new System.Drawing.Size(391, 253);
             this.dgvFuturesTrade.TabIndex = 0;
             // 
             // tabPageOption
@@ -1141,7 +1179,7 @@ namespace ScannerWindowApplication
             this.tabPageOption.Controls.Add(this.splitContainer5);
             this.tabPageOption.Location = new System.Drawing.Point(4, 24);
             this.tabPageOption.Name = "tabPageOption";
-            this.tabPageOption.Size = new System.Drawing.Size(845, 480);
+            this.tabPageOption.Size = new System.Drawing.Size(845, 485);
             this.tabPageOption.TabIndex = 2;
             this.tabPageOption.Text = "Options";
             // 
@@ -1155,7 +1193,13 @@ namespace ScannerWindowApplication
             // splitContainer5.Panel1
             // 
             this.splitContainer5.Panel1.AllowDrop = true;
-            this.splitContainer5.Panel1.Controls.Add(this.txtOptionsDisplayQty);
+            this.splitContainer5.Panel1.Controls.Add(this.btnOptionCancel);
+            this.splitContainer5.Panel1.Controls.Add(this.btnOptionModify);
+            this.splitContainer5.Panel1.Controls.Add(this.cmbOptionsType);
+            this.splitContainer5.Panel1.Controls.Add(this.txtOptionsLTQ);
+            this.splitContainer5.Panel1.Controls.Add(this.txtOptionsLTP);
+            this.splitContainer5.Panel1.Controls.Add(this.txtOptionsClosePrice);
+            this.splitContainer5.Panel1.Controls.Add(this.txtOptionsSpread);
             this.splitContainer5.Panel1.Controls.Add(this.btnOptionsSell);
             this.splitContainer5.Panel1.Controls.Add(this.txtOptionsPrice);
             this.splitContainer5.Panel1.Controls.Add(this.txtOptionsQty);
@@ -1166,7 +1210,7 @@ namespace ScannerWindowApplication
             this.splitContainer5.Panel1.Controls.Add(this.cmbOptionsAccount);
             this.splitContainer5.Panel1.Controls.Add(this.cmbOptionsTif);
             this.splitContainer5.Panel1.Controls.Add(this.cmbOptionsOC);
-            this.splitContainer5.Panel1.Controls.Add(this.label40);
+            this.splitContainer5.Panel1.Controls.Add(this.Type);
             this.splitContainer5.Panel1.Controls.Add(this.label39);
             this.splitContainer5.Panel1.Controls.Add(this.label38);
             this.splitContainer5.Panel1.Controls.Add(this.label37);
@@ -1191,20 +1235,72 @@ namespace ScannerWindowApplication
             // splitContainer5.Panel2
             // 
             this.splitContainer5.Panel2.Controls.Add(this.splitContainer6);
-            this.splitContainer5.Size = new System.Drawing.Size(845, 480);
-            this.splitContainer5.SplitterDistance = 265;
+            this.splitContainer5.Size = new System.Drawing.Size(845, 485);
+            this.splitContainer5.SplitterDistance = 267;
             this.splitContainer5.TabIndex = 30;
             // 
-            // txtOptionsDisplayQty
+            // btnOptionCancel
             // 
-            this.txtOptionsDisplayQty.Location = new System.Drawing.Point(341, 141);
-            this.txtOptionsDisplayQty.Name = "txtOptionsDisplayQty";
-            this.txtOptionsDisplayQty.Size = new System.Drawing.Size(94, 21);
-            this.txtOptionsDisplayQty.TabIndex = 60;
+            this.btnOptionCancel.Location = new System.Drawing.Point(525, 239);
+            this.btnOptionCancel.Name = "btnOptionCancel";
+            this.btnOptionCancel.Size = new System.Drawing.Size(75, 23);
+            this.btnOptionCancel.TabIndex = 67;
+            this.btnOptionCancel.Text = "Cancel";
+            this.btnOptionCancel.UseVisualStyleBackColor = true;
+            this.btnOptionCancel.Click += new System.EventHandler(this.btnOptionCancel_Click);
+            // 
+            // btnOptionModify
+            // 
+            this.btnOptionModify.Location = new System.Drawing.Point(444, 239);
+            this.btnOptionModify.Name = "btnOptionModify";
+            this.btnOptionModify.Size = new System.Drawing.Size(75, 23);
+            this.btnOptionModify.TabIndex = 66;
+            this.btnOptionModify.Text = "Modify";
+            this.btnOptionModify.UseVisualStyleBackColor = true;
+            this.btnOptionModify.Click += new System.EventHandler(this.btnOptionModify_Click);
+            // 
+            // cmbOptionsType
+            // 
+            this.cmbOptionsType.FormattingEnabled = true;
+            this.cmbOptionsType.Items.AddRange(new object[] {
+            "LIMIT",
+            "MARKET"});
+            this.cmbOptionsType.Location = new System.Drawing.Point(346, 195);
+            this.cmbOptionsType.Name = "cmbOptionsType";
+            this.cmbOptionsType.Size = new System.Drawing.Size(95, 23);
+            this.cmbOptionsType.TabIndex = 65;
+            // 
+            // txtOptionsLTQ
+            // 
+            this.txtOptionsLTQ.Location = new System.Drawing.Point(129, 58);
+            this.txtOptionsLTQ.Name = "txtOptionsLTQ";
+            this.txtOptionsLTQ.Size = new System.Drawing.Size(94, 21);
+            this.txtOptionsLTQ.TabIndex = 64;
+            // 
+            // txtOptionsLTP
+            // 
+            this.txtOptionsLTP.Location = new System.Drawing.Point(35, 58);
+            this.txtOptionsLTP.Name = "txtOptionsLTP";
+            this.txtOptionsLTP.Size = new System.Drawing.Size(87, 21);
+            this.txtOptionsLTP.TabIndex = 63;
+            // 
+            // txtOptionsClosePrice
+            // 
+            this.txtOptionsClosePrice.Location = new System.Drawing.Point(344, 58);
+            this.txtOptionsClosePrice.Name = "txtOptionsClosePrice";
+            this.txtOptionsClosePrice.Size = new System.Drawing.Size(97, 21);
+            this.txtOptionsClosePrice.TabIndex = 62;
+            // 
+            // txtOptionsSpread
+            // 
+            this.txtOptionsSpread.Location = new System.Drawing.Point(345, 94);
+            this.txtOptionsSpread.Name = "txtOptionsSpread";
+            this.txtOptionsSpread.Size = new System.Drawing.Size(94, 21);
+            this.txtOptionsSpread.TabIndex = 61;
             // 
             // btnOptionsSell
             // 
-            this.btnOptionsSell.Location = new System.Drawing.Point(363, 192);
+            this.btnOptionsSell.Location = new System.Drawing.Point(363, 239);
             this.btnOptionsSell.Name = "btnOptionsSell";
             this.btnOptionsSell.Size = new System.Drawing.Size(75, 23);
             this.btnOptionsSell.TabIndex = 59;
@@ -1214,14 +1310,14 @@ namespace ScannerWindowApplication
             // 
             // txtOptionsPrice
             // 
-            this.txtOptionsPrice.Location = new System.Drawing.Point(234, 194);
+            this.txtOptionsPrice.Location = new System.Drawing.Point(234, 241);
             this.txtOptionsPrice.Name = "txtOptionsPrice";
             this.txtOptionsPrice.Size = new System.Drawing.Size(96, 21);
             this.txtOptionsPrice.TabIndex = 58;
             // 
             // txtOptionsQty
             // 
-            this.txtOptionsQty.Location = new System.Drawing.Point(128, 194);
+            this.txtOptionsQty.Location = new System.Drawing.Point(128, 241);
             this.txtOptionsQty.Name = "txtOptionsQty";
             this.txtOptionsQty.Size = new System.Drawing.Size(94, 21);
             this.txtOptionsQty.TabIndex = 57;
@@ -1229,7 +1325,7 @@ namespace ScannerWindowApplication
             // label42
             // 
             this.label42.AutoSize = true;
-            this.label42.Location = new System.Drawing.Point(252, 176);
+            this.label42.Location = new System.Drawing.Point(252, 223);
             this.label42.Name = "label42";
             this.label42.Size = new System.Drawing.Size(44, 15);
             this.label42.TabIndex = 56;
@@ -1238,7 +1334,7 @@ namespace ScannerWindowApplication
             // label41
             // 
             this.label41.AutoSize = true;
-            this.label41.Location = new System.Drawing.Point(132, 176);
+            this.label41.Location = new System.Drawing.Point(132, 223);
             this.label41.Name = "label41";
             this.label41.Size = new System.Drawing.Size(31, 15);
             this.label41.TabIndex = 55;
@@ -1246,7 +1342,7 @@ namespace ScannerWindowApplication
             // 
             // btnOptionsBuy
             // 
-            this.btnOptionsBuy.Location = new System.Drawing.Point(35, 192);
+            this.btnOptionsBuy.Location = new System.Drawing.Point(35, 239);
             this.btnOptionsBuy.Name = "btnOptionsBuy";
             this.btnOptionsBuy.Size = new System.Drawing.Size(75, 23);
             this.btnOptionsBuy.TabIndex = 54;
@@ -1256,58 +1352,58 @@ namespace ScannerWindowApplication
             // 
             // cmbOptionsDest
             // 
+            this.cmbOptionsDest.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbOptionsDest.FormattingEnabled = true;
             this.cmbOptionsDest.Items.AddRange(new object[] {
             "NSE"});
-            this.cmbOptionsDest.Location = new System.Drawing.Point(267, 140);
+            this.cmbOptionsDest.Location = new System.Drawing.Point(268, 194);
             this.cmbOptionsDest.Name = "cmbOptionsDest";
             this.cmbOptionsDest.Size = new System.Drawing.Size(61, 23);
             this.cmbOptionsDest.TabIndex = 52;
             // 
             // cmbOptionsAccount
             // 
+            this.cmbOptionsAccount.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbOptionsAccount.FormattingEnabled = true;
-            this.cmbOptionsAccount.Location = new System.Drawing.Point(192, 139);
+            this.cmbOptionsAccount.Location = new System.Drawing.Point(193, 193);
             this.cmbOptionsAccount.Name = "cmbOptionsAccount";
             this.cmbOptionsAccount.Size = new System.Drawing.Size(62, 23);
             this.cmbOptionsAccount.TabIndex = 51;
             // 
             // cmbOptionsTif
             // 
+            this.cmbOptionsTif.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbOptionsTif.FormattingEnabled = true;
             this.cmbOptionsTif.Items.AddRange(new object[] {
             "DAY",
-            "GTC",
-            "OPG",
-            "IOC",
-            "GTD",
-            "DTC"});
-            this.cmbOptionsTif.Location = new System.Drawing.Point(112, 139);
+            "IOC"});
+            this.cmbOptionsTif.Location = new System.Drawing.Point(113, 193);
             this.cmbOptionsTif.Name = "cmbOptionsTif";
             this.cmbOptionsTif.Size = new System.Drawing.Size(67, 23);
             this.cmbOptionsTif.TabIndex = 50;
             // 
             // cmbOptionsOC
             // 
+            this.cmbOptionsOC.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbOptionsOC.FormattingEnabled = true;
-            this.cmbOptionsOC.Location = new System.Drawing.Point(35, 140);
+            this.cmbOptionsOC.Location = new System.Drawing.Point(36, 194);
             this.cmbOptionsOC.Name = "cmbOptionsOC";
             this.cmbOptionsOC.Size = new System.Drawing.Size(64, 23);
             this.cmbOptionsOC.TabIndex = 49;
             // 
-            // label40
+            // Type
             // 
-            this.label40.AutoSize = true;
-            this.label40.Location = new System.Drawing.Point(341, 118);
-            this.label40.Name = "label40";
-            this.label40.Size = new System.Drawing.Size(78, 15);
-            this.label40.TabIndex = 48;
-            this.label40.Text = "Display Qty";
+            this.Type.AutoSize = true;
+            this.Type.Location = new System.Drawing.Point(342, 172);
+            this.Type.Name = "Type";
+            this.Type.Size = new System.Drawing.Size(37, 15);
+            this.Type.TabIndex = 48;
+            this.Type.Text = "Type";
             // 
             // label39
             // 
             this.label39.AutoSize = true;
-            this.label39.Location = new System.Drawing.Point(267, 118);
+            this.label39.Location = new System.Drawing.Point(268, 172);
             this.label39.Name = "label39";
             this.label39.Size = new System.Drawing.Size(36, 15);
             this.label39.TabIndex = 47;
@@ -1316,7 +1412,7 @@ namespace ScannerWindowApplication
             // label38
             // 
             this.label38.AutoSize = true;
-            this.label38.Location = new System.Drawing.Point(192, 118);
+            this.label38.Location = new System.Drawing.Point(193, 172);
             this.label38.Name = "label38";
             this.label38.Size = new System.Drawing.Size(57, 15);
             this.label38.TabIndex = 46;
@@ -1325,7 +1421,7 @@ namespace ScannerWindowApplication
             // label37
             // 
             this.label37.AutoSize = true;
-            this.label37.Location = new System.Drawing.Point(113, 118);
+            this.label37.Location = new System.Drawing.Point(114, 172);
             this.label37.Name = "label37";
             this.label37.Size = new System.Drawing.Size(19, 15);
             this.label37.TabIndex = 45;
@@ -1334,7 +1430,7 @@ namespace ScannerWindowApplication
             // label36
             // 
             this.label36.AutoSize = true;
-            this.label36.Location = new System.Drawing.Point(36, 118);
+            this.label36.Location = new System.Drawing.Point(37, 172);
             this.label36.Name = "label36";
             this.label36.Size = new System.Drawing.Size(30, 15);
             this.label36.TabIndex = 44;
@@ -1342,48 +1438,49 @@ namespace ScannerWindowApplication
             // 
             // txtOptionsAskSize
             // 
-            this.txtOptionsAskSize.Location = new System.Drawing.Point(344, 83);
+            this.txtOptionsAskSize.Location = new System.Drawing.Point(345, 130);
             this.txtOptionsAskSize.Name = "txtOptionsAskSize";
             this.txtOptionsAskSize.Size = new System.Drawing.Size(94, 21);
             this.txtOptionsAskSize.TabIndex = 43;
             // 
             // txtOptionsAskPrice
             // 
-            this.txtOptionsAskPrice.Location = new System.Drawing.Point(233, 83);
+            this.txtOptionsAskPrice.Location = new System.Drawing.Point(234, 130);
             this.txtOptionsAskPrice.Name = "txtOptionsAskPrice";
             this.txtOptionsAskPrice.Size = new System.Drawing.Size(97, 21);
             this.txtOptionsAskPrice.TabIndex = 42;
             // 
             // txtOptionsBidPrice
             // 
-            this.txtOptionsBidPrice.Location = new System.Drawing.Point(128, 83);
+            this.txtOptionsBidPrice.Location = new System.Drawing.Point(129, 130);
             this.txtOptionsBidPrice.Name = "txtOptionsBidPrice";
             this.txtOptionsBidPrice.Size = new System.Drawing.Size(94, 21);
             this.txtOptionsBidPrice.TabIndex = 41;
             // 
             // txtOptionsBidSize
             // 
-            this.txtOptionsBidSize.Location = new System.Drawing.Point(35, 83);
+            this.txtOptionsBidSize.Location = new System.Drawing.Point(36, 130);
             this.txtOptionsBidSize.Name = "txtOptionsBidSize";
             this.txtOptionsBidSize.Size = new System.Drawing.Size(87, 21);
             this.txtOptionsBidSize.TabIndex = 40;
             // 
             // txtOptionsPercentChange
             // 
-            this.txtOptionsPercentChange.Location = new System.Drawing.Point(128, 56);
+            this.txtOptionsPercentChange.Location = new System.Drawing.Point(129, 94);
             this.txtOptionsPercentChange.Name = "txtOptionsPercentChange";
             this.txtOptionsPercentChange.Size = new System.Drawing.Size(94, 21);
             this.txtOptionsPercentChange.TabIndex = 39;
             // 
             // txtOptionsChange
             // 
-            this.txtOptionsChange.Location = new System.Drawing.Point(35, 56);
+            this.txtOptionsChange.Location = new System.Drawing.Point(36, 94);
             this.txtOptionsChange.Name = "txtOptionsChange";
             this.txtOptionsChange.Size = new System.Drawing.Size(87, 21);
             this.txtOptionsChange.TabIndex = 38;
             // 
             // cmbOptionsCallPut
             // 
+            this.cmbOptionsCallPut.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbOptionsCallPut.FormattingEnabled = true;
             this.cmbOptionsCallPut.Items.AddRange(new object[] {
             "CE",
@@ -1405,6 +1502,7 @@ namespace ScannerWindowApplication
             // 
             // cmbOptionsStrike
             // 
+            this.cmbOptionsStrike.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbOptionsStrike.FormattingEnabled = true;
             this.cmbOptionsStrike.Location = new System.Drawing.Point(344, 27);
             this.cmbOptionsStrike.Name = "cmbOptionsStrike";
@@ -1423,6 +1521,7 @@ namespace ScannerWindowApplication
             // 
             // cmbOptionsExpiry
             // 
+            this.cmbOptionsExpiry.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbOptionsExpiry.FormattingEnabled = true;
             this.cmbOptionsExpiry.Location = new System.Drawing.Point(128, 27);
             this.cmbOptionsExpiry.Name = "cmbOptionsExpiry";
@@ -1441,6 +1540,7 @@ namespace ScannerWindowApplication
             // 
             // cmbOptionsSymbol
             // 
+            this.cmbOptionsSymbol.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbOptionsSymbol.FormattingEnabled = true;
             this.cmbOptionsSymbol.Location = new System.Drawing.Point(35, 27);
             this.cmbOptionsSymbol.Name = "cmbOptionsSymbol";
@@ -1470,7 +1570,7 @@ namespace ScannerWindowApplication
             // splitContainer6.Panel2
             // 
             this.splitContainer6.Panel2.Controls.Add(this.dgvOptionsTrade);
-            this.splitContainer6.Size = new System.Drawing.Size(845, 211);
+            this.splitContainer6.Size = new System.Drawing.Size(845, 214);
             this.splitContainer6.SplitterDistance = 477;
             this.splitContainer6.TabIndex = 0;
             // 
@@ -1488,7 +1588,7 @@ namespace ScannerWindowApplication
             this.dgvOptionsPrices.Location = new System.Drawing.Point(0, 0);
             this.dgvOptionsPrices.Name = "dgvOptionsPrices";
             this.dgvOptionsPrices.ReadOnly = true;
-            this.dgvOptionsPrices.Size = new System.Drawing.Size(477, 211);
+            this.dgvOptionsPrices.Size = new System.Drawing.Size(477, 214);
             this.dgvOptionsPrices.TabIndex = 1;
             // 
             // dataGridViewTextBoxColumn2
@@ -1524,7 +1624,7 @@ namespace ScannerWindowApplication
             this.dgvOptionsTrade.Location = new System.Drawing.Point(0, 0);
             this.dgvOptionsTrade.Name = "dgvOptionsTrade";
             this.dgvOptionsTrade.ReadOnly = true;
-            this.dgvOptionsTrade.Size = new System.Drawing.Size(364, 211);
+            this.dgvOptionsTrade.Size = new System.Drawing.Size(364, 214);
             this.dgvOptionsTrade.TabIndex = 1;
             // 
             // tabPage1
@@ -1535,7 +1635,7 @@ namespace ScannerWindowApplication
             this.tabPage1.Location = new System.Drawing.Point(4, 24);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(845, 480);
+            this.tabPage1.Size = new System.Drawing.Size(845, 426);
             this.tabPage1.TabIndex = 3;
             this.tabPage1.Text = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -1565,12 +1665,30 @@ namespace ScannerWindowApplication
             this.richTextBox2.TabIndex = 0;
             this.richTextBox2.Text = "";
             // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.StatusLabelMessage1});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 491);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(853, 22);
+            this.statusStrip1.TabIndex = 1;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // StatusLabelMessage1
+            // 
+            this.StatusLabelMessage1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.StatusLabelMessage1.Name = "StatusLabelMessage1";
+            this.StatusLabelMessage1.Size = new System.Drawing.Size(118, 17);
+            this.StatusLabelMessage1.Text = "toolStripStatusLabel1";
+            // 
             // TradingBoxV2
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(853, 508);
+            this.ClientSize = new System.Drawing.Size(853, 513);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.tabControl1);
             this.Name = "TradingBoxV2";
             this.Text = "TradingBoxV2";
@@ -1615,7 +1733,10 @@ namespace ScannerWindowApplication
             ((System.ComponentModel.ISupportInitialize)(this.dgvOptionsTrade)).EndInit();
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -1632,7 +1753,6 @@ namespace ScannerWindowApplication
         private System.Windows.Forms.TabPage tabPageOption;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.Button btnStocksCancel;
-        private System.Windows.Forms.Button btnStocksShort;
         private System.Windows.Forms.Button btnStocksSell;
         private System.Windows.Forms.Button btnStocksBuy;
         private System.Windows.Forms.ComboBox cmbStocksTif;
@@ -1671,7 +1791,6 @@ namespace ScannerWindowApplication
         private System.Windows.Forms.DataGridView dgvStocksTrades;
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.Button btnFuturesCancel;
-        private System.Windows.Forms.Button btnFuturesShort;
         private System.Windows.Forms.Button btnFuturesSell;
         private System.Windows.Forms.Button btnFuturesBuy;
         private System.Windows.Forms.ComboBox cmbFuturesTif;
@@ -1715,7 +1834,7 @@ namespace ScannerWindowApplication
         private System.Windows.Forms.ComboBox cmbOptionsAccount;
         private System.Windows.Forms.ComboBox cmbOptionsTif;
         private System.Windows.Forms.ComboBox cmbOptionsOC;
-        private System.Windows.Forms.Label label40;
+        private System.Windows.Forms.Label Type;
         private System.Windows.Forms.Label label39;
         private System.Windows.Forms.Label label38;
         private System.Windows.Forms.Label label37;
@@ -1737,7 +1856,6 @@ namespace ScannerWindowApplication
         private System.Windows.Forms.SplitContainer splitContainer6;
         private System.Windows.Forms.DataGridView dgvOptionsPrices;
         private System.Windows.Forms.DataGridView dgvOptionsTrade;
-        private System.Windows.Forms.TextBox txtOptionsDisplayQty;
         private TextBox txtFutAskSz;
         private Label label24;
         private TextBox txtFutAskPz;
@@ -1758,5 +1876,18 @@ namespace ScannerWindowApplication
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
+        private TextBox txtOptionsSpread;
+        private TextBox txtFutClosePrice;
+        private Label label21;
+        private TextBox txtOptionsClosePrice;
+        private TextBox txtOptionsLTQ;
+        private TextBox txtOptionsLTP;
+        private StatusStrip statusStrip1;
+        private ToolStripStatusLabel StatusLabelMessage1;
+        private ComboBox cmbOptionsType;
+        private Button btnModify;
+        private Button btnFutureModify;
+        private Button btnOptionCancel;
+        private Button btnOptionModify;
     }
 }

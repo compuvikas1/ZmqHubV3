@@ -24,9 +24,13 @@ namespace ScannerWindowApplication
         public static Dictionary<string, SecurityMaster> dictSecurityMaster = new Dictionary<string, SecurityMaster>();
         public static Dictionary<string, double> dictSecurityCloseMaster = new Dictionary<string, double>();
 
+        ScannerBox scannerBox = null;
+        OrderBlotter orderBlotter = null;
+        SecurityMasterGenerator securityMasterGenerator = null;
+
         public void loadSecurityMaster()
         {
-            string []lines = File.ReadAllLines(@"C:\s2trading\zmqhubresource\SecurityMaster.csv");
+            string []lines = File.ReadAllLines(@"C:\s2trading\zmqhubresource\contractdetails\SecurityMaster.csv");
             foreach(string line in lines)
             {
                 if (line.Contains("ScripNo")) continue;
@@ -49,99 +53,105 @@ namespace ScannerWindowApplication
             }
         }
 
-        public void loadSecurityClosePrices()
-        {
-            string[] lines = File.ReadAllLines(@"C:\s2trading\zmqhubresource\contractdetails\cm08FEB2017bhav.csv");
+        //public void loadSecurityClosePrices()
+        //{
+        //    string[] lines = File.ReadAllLines(@"C:\s2trading\zmqhubresource\contractdetails\cm20FEB2017bhav.csv");
 
+        //    List<SecurityMaster> listEQSecMaster = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Instrument == "EQ").Select(x => x.Value).ToList();
+
+        //    foreach (string line in lines)
+        //    {
+        //        string[] arr = line.Split(',');
+
+        //        if (arr[0].Equals("SYMBOL"))
+        //            continue;
+
+        //        string Symbol = arr[0];
+        //        string instrument = arr[1];
+        //        string last = arr[6];
+                
+        //        if (instrument.Equals("EQ"))
+        //        {
+        //            try
+        //            {
+        //                //string tokenno = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && x.Value.Instrument == instrument).Select(x => x.Key).First();
+        //                string tokenno = listEQSecMaster.Where(x => x.Symbol == Symbol && x.Instrument == instrument).Select(x => x.TokenNo).First();
+        //                if (dictSecurityMaster.ContainsKey(tokenno))
+        //                {                            
+        //                    dictSecurityCloseMasterStocks[tokenno] = Convert.ToDouble(last);
+        //                }
+        //            }
+        //            catch(Exception ex)
+        //            {
+        //                Console.WriteLine(ex.Message);
+        //            }
+        //        }
+        //    }
+
+        //    return;
+
+        //    lines = File.ReadAllLines(@"C:\s2trading\zmqhubresource\contractdetails\fo20FEB2017bhav.csv");
+        //    int ctr = 0;
+        //    foreach (string line in lines)
+        //    {
+        //        string[] arr = line.Split(',');
+                
+        //        if (arr[0].Equals("INSTRUMENT"))
+        //            continue;
+
+        //        string Symbol = arr[1];
+        //        string instrument = arr[0];
+        //        string expiry = arr[2];
+        //        string strike = arr[3];
+        //        string opttype = arr[4];
+
+        //        string last = arr[8];
+        //        if (instrument == "FUTIDX" || instrument == "FUTSTK")
+        //        {
+        //            try
+        //            {
+        //                DateTime dtExpiry = DateTime.ParseExact(expiry, "dd-MMM-yyyy", null);
+        //                string expiryDate = dtExpiry.ToString("yyyy-MM-dd");
+
+        //                string tokenno = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && x.Value.Instrument == instrument && x.Value.ExpiryDate == expiryDate).Select(x => x.Key).Distinct().ToList().FirstOrDefault();
+
+        //                //if (dictSecurityMaster.ContainsKey(tokenno))
+        //                if(tokenno != null)
+        //                {
+        //                    ctr++;
+        //                    dictSecurityCloseMasterFutures[tokenno] = Convert.ToDouble(last);
+        //                }
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                Console.WriteLine(ex.Message);
+        //            }
+        //        }
+        //        if (instrument == "OPTSTK" || instrument == "OPTIDX")                
+        //        {
+        //            try
+        //            {
+        //                DateTime dtExpiry = DateTime.ParseExact(expiry, "dd-MMM-yyyy", null);
+        //                string expiryDate = dtExpiry.ToString("yyyy-MM-dd");
+
+        //                string tokenno = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && x.Value.Instrument == instrument && x.Value.ExpiryDate == expiryDate && x.Value.StrikePrice == strike && x.Value.OptType == opttype).Select(x => x.Key).Distinct().ToList().FirstOrDefault();
+
+        //                //if (dictSecurityMaster.ContainsKey(tokenno))
+        //                if (tokenno != null)
+        //                {
+        //                    ctr++;
+        //                    dictSecurityCloseMasterOptions[tokenno] = Convert.ToDouble(last);
+        //                }
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                Console.WriteLine(ex.Message);
+        //            }
+        //        }                
+        //    }
             
-            foreach (string line in lines)
-            {
-                string[] arr = line.Split(',');
-
-                if (arr[0].Equals("SYMBOL"))
-                    continue;
-
-                string Symbol = arr[0];
-                string instrument = arr[1];
-                string last = arr[6];
-                
-                if (instrument.Equals("EQ"))
-                {
-                    try
-                    {
-                        string tokenno = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && x.Value.Instrument == instrument).Select(x => x.Key).First();
-
-                        if (dictSecurityMaster.ContainsKey(tokenno))
-                        {                            
-                            dictSecurityCloseMaster[tokenno] = Convert.ToDouble(last);
-                        }
-                    }
-                    catch(Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-                }
-            }
-
-            lines = File.ReadAllLines(@"C:\s2trading\zmqhubresource\contractdetails\fo08FEB2017bhav.csv");
-            int ctr = 0;
-            foreach (string line in lines)
-            {
-                string[] arr = line.Split(',');
-                
-                if (arr[0].Equals("INSTRUMENT"))
-                    continue;
-
-                string Symbol = arr[1];
-                string instrument = arr[0];
-                string expiry = arr[2];
-                string strike = arr[3];
-                string opttype = arr[4];
-
-                string last = arr[8];
-                if (instrument == "FUTIDX" || instrument == "FUTSTK")
-                {
-                    try
-                    {
-                        DateTime dtExpiry = DateTime.ParseExact(expiry, "dd-MMM-yyyy", null);
-                        string expiryDate = dtExpiry.ToString("yyyy-MM-dd");
-
-                        string tokenno = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && x.Value.Instrument == instrument && x.Value.ExpiryDate == expiryDate).Select(x => x.Key).Distinct().ToList().First();
-
-                        if (dictSecurityMaster.ContainsKey(tokenno))
-                        {
-                            ctr++;
-                            dictSecurityCloseMaster[tokenno] = Convert.ToDouble(last);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-                }
-                if (instrument == "OPTIDX" || instrument == "OPTSTK")                
-                {
-                    try
-                    {
-                        DateTime dtExpiry = DateTime.ParseExact(expiry, "dd-MMM-yyyy", null);
-                        string expiryDate = dtExpiry.ToString("yyyy-MM-dd");
-
-                        string tokenno = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Symbol == Symbol && x.Value.Instrument == instrument && x.Value.ExpiryDate == expiryDate && x.Value.StrikePrice == strike && x.Value.OptType == opttype).Select(x => x.Key).Distinct().ToList().First();
-
-                        if (dictSecurityMaster.ContainsKey(tokenno))
-                        {
-                            ctr++;
-                            dictSecurityCloseMaster[tokenno] = Convert.ToDouble(last);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-                }
-            }
-            Console.WriteLine("ctr = " + ctr);
-        }
+        //    Console.WriteLine("ctr = " + ctr);
+        //}
 
         //static DateTime epoch = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -195,8 +205,6 @@ namespace ScannerWindowApplication
             InitializeComponent();
         }
 
-        ScannerBox scannerBox = null;
-        OrderBlotter orderBlotter = null;
         private void configToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
@@ -255,6 +263,30 @@ namespace ScannerWindowApplication
         private void ScannerDashboard_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void securityMasterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (securityMasterGenerator == null || securityMasterGenerator.Text == "")
+            {
+                securityMasterGenerator = new SecurityMasterGenerator();
+                securityMasterGenerator.MdiParent = this;
+                securityMasterGenerator.Dock = DockStyle.Fill;
+                securityMasterGenerator.Show();
+            }
+            else if (CheckOpened(securityMasterGenerator.Text))
+            {
+                securityMasterGenerator.WindowState = FormWindowState.Normal;
+                securityMasterGenerator.Dock = DockStyle.Fill;
+                securityMasterGenerator.Show();
+                securityMasterGenerator.Focus();
+            }
+        }
+
+        private void closePriceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ClosePriceForm closePriceForm = new ClosePriceForm();
+            closePriceForm.Show();
         }
     }
 }
