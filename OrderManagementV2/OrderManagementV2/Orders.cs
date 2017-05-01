@@ -360,7 +360,7 @@ namespace OrderManagementV2
 
             var orderCan = new QuickFix.FIX42.OrderCancelRequest(origCLOrdID, OrdId, symbol, side,
                 new TransactTime(DateTime.Now.ToUniversalTime()));
-            
+
             Session.SendToTarget(orderCan, FixClient.MySess);
             return os.OrderNo;
         }
@@ -437,7 +437,7 @@ namespace OrderManagementV2
             return 0;
         }
 
-        public int FIXResponseHandler(Int32 OrderID, string ExchangeOrderId, Int32 origOrdID, char status, string status_msg, string other_msg,float price, char orderType)
+        public int FIXResponseHandler(Int32 OrderID, string ExchangeOrderId, Int32 origOrdID, char status, string status_msg, string other_msg, float price, char orderType)
         {
             string data = "";
             OrderDAO ord = new OrderDAO();
@@ -451,7 +451,7 @@ namespace OrderManagementV2
             { // accepted the amendment i.e. Replaced so add the new ord no.
                 iret = ord.setOrdersWithReplacedFixResponse(OrderID, getExecType(status), ExchangeOrderId, ref os);
             } // In case of Order Rejected - call DB for reject status.
-            else if(status == 'D')
+            else if (status == 'D')
             {
                 iret = ord.setOrdersWithFixResponseRestated(OrderID, getExecType(status), ExchangeOrderId, price, orderType, ref os);
 
@@ -485,16 +485,16 @@ namespace OrderManagementV2
             return 0;
         }
 
-        public int FIXResponseHandlerForFill(int OrderID, string ExchangeOrderId, float qty, float price, float filledQty, string status)
+        public int FIXResponseHandlerForFill(int OrderID, string ExchangeOrderId, float qty, float price, float filledQty, string status, char exectype)
         {
             OrderDAO ord = new OrderDAO();
             OrderStruct os = new OrderStruct();
             int orderNo = ord.getOrderNoFromOrderID(OrderID);
-            ord.addOrderFillsFromFIX(OrderID, ExchangeOrderId, qty, price, filledQty, status);
-            ord.getOrderFromDB(orderNo, ref os);            
-            string status_msg = "";
-            string other_msg = "";
-            string data = new string(os.machineID) + ":" + new string(os.userID) + ":" + os.OrderNo + ":" + new string(os.OrderStatus) + ":" + ExchangeOrderId + ":" + status + ":" + status_msg + ":" + other_msg;
+            ord.addOrderFillsFromFIX(OrderID, orderNo, ExchangeOrderId, qty, price, filledQty, status);
+            ord.getOrderFromDB(orderNo, ref os);
+            float pos = ord.getCurrentPosition(os.tokenID, new string(os.userID));            
+            string other_msg = Convert.ToString(pos);
+            string data = new string(os.machineID) + ":" + new string(os.userID) + ":" + os.OrderNo + ":" + new string(os.OrderStatus) + ":" + ExchangeOrderId + ":" + exectype + ":" + status + ":" + other_msg;
             OMFillPub ofp = new OMFillPub();
             if (ofp.zmqUpdates(data) == 0)
             {
@@ -505,6 +505,12 @@ namespace OrderManagementV2
                 Console.WriteLine("Zmq update fail");
             }
             return 0;
+        }
+
+        public int takeEODPositions()
+        {
+            OrderDAO ord = new OrderDAO();
+            return (ord.runEodPositions());
         }
 
         private int isPartillyFilled()

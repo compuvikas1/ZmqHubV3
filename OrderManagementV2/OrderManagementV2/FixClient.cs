@@ -6,12 +6,15 @@ using System.IO;
 
 namespace OrderManagementV2
 {
+    
     class FixClient : QuickFix.IApplication
     {
+        string logFileName = null;
+
         public void logMe(string data)
         {
             Console.WriteLine(data);
-            File.AppendAllText("OMLog.txt", data);
+            File.AppendAllText(logFileName, data);
         }
 
         public static SessionID MySess;
@@ -20,6 +23,11 @@ namespace OrderManagementV2
 
         public FixClient()
         {
+            if(logFileName == null)
+            {
+                string dateNow = DateTime.Now.ToString("dd_MM_yyyy");
+                logFileName = "OMLog_" + dateNow + ".txt";
+            }
             //this.frm1 = form1;
         }
 
@@ -144,8 +152,15 @@ namespace OrderManagementV2
                 }
                 else if (msg is QuickFix.FIX42.ExecutionReport)
                 {
+                    string ordTypeField = msg.GetField(40);
+                    if (ordTypeField == "1")
+                    {
+                        IField field = new DecimalField(44, 0);
+                        msg.SetField(field);
+                    }
+
                     QuickFix.FIX42.ExecutionReport er = (QuickFix.FIX42.ExecutionReport)msg;
-                    string orderDetails = Convert.ToString(er.ExecType.getValue()) + "|" + er.OrderQty.getValue() + "|" + er.Price.getValue() + "|" + er.LastPx.getValue() + "|" + er.LastShares.getValue() + "|" + er.CumQty.getValue() + "|" + er.AvgPx.getValue() + "|";
+                    string orderDetails = Convert.ToString(er.ExecType.getValue()) + "|" + er.OrderQty.getValue() + "|" + er.Price.getValue() + "|" + er.LastShares.getValue() + "|" + er.LastPx.getValue() + "|" + er.CumQty.getValue() + "|" + er.AvgPx.getValue() + "|" + er.OrdType.getValue() + "|";
                     if (er.IsSetText())
                         orderDetails = orderDetails + er.Text + "|";
                     else
@@ -156,7 +171,7 @@ namespace OrderManagementV2
                     Orders o = new Orders();
                     if (er.ExecType.getValue() == ExecType.FILL || er.ExecType.getValue() == ExecType.PARTIAL_FILL)
                     {
-                        o.FIXResponseHandlerForFill(Convert.ToInt32(er.ClOrdID.getValue()), er.OrderID.getValue(), (float)Convert.ToDouble(er.OrderQty.getValue()), (float)Convert.ToDouble(er.Price.getValue()), (float)Convert.ToDouble(er.LastShares.getValue()), getExecType(er.ExecType));
+                        o.FIXResponseHandlerForFill(Convert.ToInt32(er.ClOrdID.getValue()), er.OrderID.getValue(), (float)Convert.ToDouble(er.OrderQty.getValue()), (float)Convert.ToDouble(er.LastPx.getValue()), (float)Convert.ToDouble(er.LastShares.getValue()), getExecType(er.ExecType), er.ExecType.getValue());
                     }
                     else
                     {
@@ -183,7 +198,7 @@ namespace OrderManagementV2
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine("exception(FixClient FromAPP) " + e.Message);
             }
         }
         public void OnCreate(SessionID sessionID)

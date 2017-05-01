@@ -10,7 +10,7 @@ namespace ScannerWindowApplication
 {
     class OrderClient
     {
-        static TradingBoxV2 tradingBox = null;
+        static TradingBoxV3 tradingBox = null;
         public static Guid MachineGuid = ToGuid("TradingBox1");
         public static Guid UserGuid = ToGuid("user1");
 
@@ -45,6 +45,7 @@ namespace ScannerWindowApplication
                 ord.userID = toks[10].ToCharArray();
                 ord.orderType = (int)Convert.ToDecimal(toks[11].ToString());
                 ord.timeInForce = (int)Convert.ToDecimal(toks[12].ToString());
+                ord.tokenID = (int)Convert.ToDecimal(toks[13].ToString());
             }
             else if (toks[0].Equals("CAN") && toks.Length >= 3)
             {
@@ -67,6 +68,14 @@ namespace ScannerWindowApplication
                 ord.exch = toks[9].ToCharArray();
                 ord.machineID = toks[10].ToCharArray();
                 ord.userID = toks[11].ToCharArray();
+                ord.orderType = (int)Convert.ToDecimal(toks[12].ToString());
+                ord.timeInForce = (int)Convert.ToDecimal(toks[13].ToString());
+            }
+            else if (toks[0].Equals("EOD") && toks.Length >= 1)
+            {
+                ord.methodID = 5;
+                ord.symbol = symbol.ToCharArray();
+                ord.OrderNo = 0;
             }
         }
 
@@ -83,7 +92,7 @@ namespace ScannerWindowApplication
             try
             {
                 int size = Marshal.SizeOf(typeof(OrderStruct));
-                tradingBox.displayTextArea("Size of str : " + size);
+                //tradingBox.displayTextArea("Size of str : " + size);
 
                 byte[] arr = new byte[size];
 
@@ -100,7 +109,51 @@ namespace ScannerWindowApplication
             }
         }
 
-        public static bool insertOrder(string symbol, string expiry, string callput, string exch, string strike,  double price, int qty, char action, int OrderType, int TIF, TradingBoxV2 tb)
+        public static bool insertOrderEOD()
+        {
+            try
+            {
+                string reqType = null;
+                Byte[] sendBytes = null;
+
+                //stringToStruct("INS:AAPL0000:111.90:1:B:21:25", ref os);
+                string input = "EOD:NIFTY";
+
+                OrderStruct os = new OrderStruct(11, 8);
+                stringToStruct(input, ref os);
+                os.display();
+
+                TcpClient clientSocket = new TcpClient();
+
+                //clientSocket.Connect("127.0.0.1", 5552);
+                clientSocket.Connect("158.69.193.253", 5552);
+                // use the ipaddress as in the server program
+
+                NetworkStream networkStream = clientSocket.GetStream();
+
+                sendBytes = (getBytes(os));
+
+                networkStream.Write(sendBytes, 0, sendBytes.Length);
+                System.Threading.Thread.Sleep(200);
+                networkStream.Flush();
+
+                byte[] bytesFrom = new byte[(Int32)clientSocket.ReceiveBufferSize + 1];
+                networkStream.Read(bytesFrom, 0, (Int32)clientSocket.ReceiveBufferSize);
+                reqType = System.Text.Encoding.ASCII.GetString(bytesFrom);
+
+                clientSocket.Close();
+                
+                return true;
+            }
+            catch (Exception e)
+            {                
+                Console.WriteLine("Error..... " + e.StackTrace);
+            }
+            return false;
+
+        }
+
+        public static bool insertOrder(string symbol, string expiry, string callput, string exch, string strike,  double price, int qty, char action, int OrderType, int TIF, int tokenno, TradingBoxV3 tb)
         {
             tradingBox = tb;
             try
@@ -119,7 +172,7 @@ namespace ScannerWindowApplication
                 Byte[] sendBytes = null;
 
                 //stringToStruct("INS:AAPL0000:111.90:1:B:21:25", ref os);
-                string input = "INS:" + symbol + ":" + price + ":" + qty + ":" + strike + ":" + action + ":" + expiry + ":" + callput + ":" + exch + ":" + MachineGuid + ":" + UserGuid + ":" + OrderType + ":" + TIF;
+                string input = "INS:" + symbol + ":" + price + ":" + qty + ":" + strike + ":" + action + ":" + expiry + ":" + callput + ":" + exch + ":" + MachineGuid + ":" + UserGuid + ":" + OrderType + ":" + TIF + ":" + tokenno;
                 tradingBox.displayTextArea(input);
 
                 OrderStruct os = new OrderStruct(11, 8);
@@ -183,7 +236,7 @@ namespace ScannerWindowApplication
             return false;
         }
 
-        public static bool modifyOrder(int orderid, string symbol, string expiry, string callput, string exch, string strike, double price, int qty, char action, int OrderType, int TIF, TradingBoxV2 tb)
+        public static bool modifyOrder(int orderid, string symbol, string expiry, string callput, string exch, string strike, double price, int qty, char action, int OrderType, int TIF, TradingBoxV3 tb)
         {
             tradingBox = tb;
             try
@@ -202,6 +255,7 @@ namespace ScannerWindowApplication
                 Byte[] sendBytes = null;
 
                 //stringToStruct("INS:AAPL0000:111.90:1:B:21:25", ref os);
+                //string input = "INS:" + symbol + ":" + price + ":" + qty + ":" + strike + ":" + action + ":" + expiry + ":" + callput + ":" + exch + ":" + MachineGuid + ":" + UserGuid + ":" + OrderType + ":" + TIF;
                 string input = "AMD:" + symbol + ":" + orderid + ":" + price + ":" + qty + ":" + strike + ":" + action + ":" + expiry + ":" + callput + ":" + exch + ":" + MachineGuid + ":" + UserGuid + ":" + OrderType + ":" + TIF;
                 tradingBox.displayTextArea(input);
 

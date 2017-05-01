@@ -60,73 +60,11 @@ namespace ScannerWindowApplication
 
                 try
                 {
-                    FileInfo fi = new FileInfo(contractsFilePath);
-                    FileStream inFile = fi.OpenRead();
-
-                    string contractZipFile = fi.FullName;
-                    string contractNewFile = contractZipFile.Remove(contractZipFile.Length - fi.Extension.Length) + ".txt";
-
-                    if (File.Exists(contractNewFile))
-                    {
-                        File.Delete(contractNewFile);
-                    }
-                    FileStream outFile = File.Create(contractNewFile);
-
-                    using (GZipStream Dc = new GZipStream(inFile, CompressionMode.Decompress))
-                    {
-                        Dc.CopyTo(outFile);
-                        Dc.Flush();
-                        Dc.Close();
-
-                        outFile.Close();
-                    }
-
-                    lblMessage.AppendText("Unzip Contracts.gz Done" + Environment.NewLine);
-
-                    // parse the contracts.txt and add the contents in SecurityMaster.csv
-
-                    string SecurityMasterFilePath = folderPath + "\\SecurityMaster.csv";
-
                     LinkedList<string> formattedLines = new LinkedList<string>();
+                    Dictionary<Int32, string> dictunderlyingtoken = new Dictionary<Int32, string>();
 
-                    String header = "ScripNo,underlyingScripNo,Instrument,symbol,tradeSymbol,MLot,expiryDate,StrikePrice,OptType";
+                    String header = "ScripNo,underlyingScripNo,Instrument,symbol,tradeSymbol,MLot,expiryDate,StrikePrice,OptType,fullname";
                     formattedLines.AddLast(header);
-
-                    String[] lines = File.ReadAllLines(contractNewFile);
-                    foreach (string line in lines)
-                    {
-                        if (line.Split('|').Length < 4)
-                        {
-                            continue;
-                        }
-
-                        string[] arr = line.Split('|');
-
-                        string ScripNo = arr[0];
-                        string underlyingScripNo = arr[1];
-                        string Instrument = arr[2];
-                        string symbol = arr[3];
-                        long val = Convert.ToUInt32(arr[6]);
-
-                        DateTime dt = new DateTime((val * 1000L) + TimeOffset);
-
-                        double ticks = double.Parse(arr[6]) * 1000;
-                        TimeSpan time = TimeSpan.FromMilliseconds(ticks);
-                        DateTime startdate = new DateTime(1980, 1, 1) + time;
-
-                        string expiryDate = startdate.ToString("yyyy-MM-dd");
-                        if (arr[7] != "-1")
-                            arr[7] = (Convert.ToInt32(arr[7]) / 100).ToString();
-                        string StrikePrice = arr[7];
-                        string OptType = arr[8];
-                        string MLot = arr[30];
-                        string tradeSymbol = arr[53];
-
-                        String newLine = ScripNo + "," + underlyingScripNo + "," + Instrument + "," + symbol + "," + tradeSymbol + "," + MLot + "," + expiryDate + "," + StrikePrice + "," + OptType;
-                        formattedLines.AddLast(newLine);
-
-                    }
-                    lblMessage.AppendText("Successfully processed contract.txt file" + Environment.NewLine);
 
                     //processing the equities Security.gz file
 
@@ -156,10 +94,10 @@ namespace ScannerWindowApplication
 
                     // parse the contracts.txt and add the contents in SecurityMaster.csv
 
-                    lines = File.ReadAllLines(securityNewFile);
+                    string []lines = File.ReadAllLines(securityNewFile);
                     foreach (string line in lines)
                     {
-                        if (line.Split('|').Length < 4)
+                        if (line.Split('|').Length < 10)
                         {
                             continue;
                         }
@@ -177,14 +115,84 @@ namespace ScannerWindowApplication
                             string OptType = "";
                             string MLot = "";
                             string tradeSymbol = "";
+                            string fullname = arr[21];
 
-                            String newLine = ScripNo + "," + underlyingScripNo + "," + Instrument + "," + symbol + "," + tradeSymbol + "," + MLot + "," + expiryDate + "," + StrikePrice + "," + OptType;
+                            String newLine = ScripNo + "," + underlyingScripNo + "," + Instrument + "," + symbol + "," + tradeSymbol + "," + MLot + "," + expiryDate + "," + StrikePrice + "," + OptType + "," + fullname;
+                            dictunderlyingtoken[Convert.ToInt32(ScripNo)] = fullname;
                             formattedLines.AddLast(newLine);
                         }
                     }
 
                     lblMessage.AppendText("Successfully processed Security.txt file" + Environment.NewLine);
 
+                    FileInfo fi = new FileInfo(contractsFilePath);
+                    FileStream inFile = fi.OpenRead();
+
+                    string contractZipFile = fi.FullName;
+                    string contractNewFile = contractZipFile.Remove(contractZipFile.Length - fi.Extension.Length) + ".txt";
+
+                    if (File.Exists(contractNewFile))
+                    {
+                        File.Delete(contractNewFile);
+                    }
+                    FileStream outFile = File.Create(contractNewFile);
+
+                    using (GZipStream Dc = new GZipStream(inFile, CompressionMode.Decompress))
+                    {
+                        Dc.CopyTo(outFile);
+                        Dc.Flush();
+                        Dc.Close();
+
+                        outFile.Close();
+                    }
+
+                    lblMessage.AppendText("Unzip Contracts.gz Done" + Environment.NewLine);
+
+                    // parse the contracts.txt and add the contents in SecurityMaster.csv
+
+                    string SecurityMasterFilePath = folderPath + "\\SecurityMaster.csv";
+
+                    lines = File.ReadAllLines(contractNewFile);
+                    foreach (string line in lines)
+                    {
+                        if (line.Split('|').Length < 10)
+                        {
+                            continue;
+                        }
+
+                        string[] arr = line.Split('|');
+
+                        string ScripNo = arr[0];
+                        string underlyingScripNo = arr[1];
+                        string Instrument = arr[2];
+                        string symbol = arr[3];
+                        long val = Convert.ToUInt32(arr[6]);
+
+                        DateTime dt = new DateTime((val * 1000L) + TimeOffset);
+
+                        double ticks = double.Parse(arr[6]) * 1000;
+                        TimeSpan time = TimeSpan.FromMilliseconds(ticks);
+                        DateTime startdate = new DateTime(1980, 1, 1) + time;
+
+                        string expiryDate = startdate.ToString("yyyy-MM-dd");
+                        if (arr[7] != "-1")
+                            arr[7] = (Convert.ToInt32(arr[7]) / 100).ToString();
+                        string StrikePrice = arr[7];
+                        string OptType = arr[8];
+                        string MLot = arr[30];
+                        string tradeSymbol = arr[53];
+                        string fullname = tradeSymbol;
+                        if (dictunderlyingtoken.ContainsKey(Convert.ToInt32(underlyingScripNo)))
+                            fullname = dictunderlyingtoken[Convert.ToInt32(underlyingScripNo)];
+                        else
+                            lblMessage.AppendText("Token not Found : " + underlyingScripNo);
+
+                        String newLine = ScripNo + "," + underlyingScripNo + "," + Instrument + "," + symbol + "," + tradeSymbol + "," + MLot + "," + expiryDate + "," + StrikePrice + "," + OptType + "," + fullname;
+                        formattedLines.AddLast(newLine);
+                    }
+
+                    lblMessage.AppendText("Successfully processed contract.txt file" + Environment.NewLine);
+                                        
                     string[] the_array = formattedLines.Select(i => i.ToString()).ToArray();
 
                     File.WriteAllLines(SecurityMasterFilePath, the_array);

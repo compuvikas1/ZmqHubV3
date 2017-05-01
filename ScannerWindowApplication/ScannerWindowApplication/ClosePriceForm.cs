@@ -19,7 +19,7 @@ namespace ScannerWindowApplication
 
         public static Dictionary<string, double> dictionaryClosePrices = new Dictionary<string, double>();
 
-        string mainDirectoryPath = @"C:\s2trading\zmqhubresource\contractdetails\";
+        string mainDirectoryPath = @"c:\windows\s2trading\zmqhubresource\contractdetails\";
 
         public ClosePriceForm()
         {
@@ -39,7 +39,7 @@ namespace ScannerWindowApplication
             string foZipfilename = fofilename + ".zip";
 
             //https://www.nseindia.com/content/historical/EQUITIES/2017/FEB/cm21FEB2017bhav.csv.zip
-            //webClient.DownloadFile(new Uri("https://www.nseindia.com/content/historical/EQUITIES/2017/FEB/" + filename), @"C:\s2trading\zmqhubresource\contractdetails\" + filename);
+            //webClient.DownloadFile(new Uri("https://www.nseindia.com/content/historical/EQUITIES/2017/FEB/" + filename), @"c:\windows\s2trading\zmqhubresource\contractdetails\" + filename);
             // Defines the URL and destination directory for the downloaded file
 
             string cmURI = "https://www.nseindia.com/content/historical/EQUITIES/" + dateYear+ "/" + dateMonth+"/";

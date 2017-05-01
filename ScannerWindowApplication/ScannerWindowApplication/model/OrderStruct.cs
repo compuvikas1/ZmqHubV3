@@ -54,6 +54,7 @@ namespace ScannerWindowApplication
         public char[] userID;
         public int orderType;
         public int timeInForce;
+        public int tokenID;
 
         public OrderStruct(int isym, int ios)
         {
@@ -76,6 +77,7 @@ namespace ScannerWindowApplication
             timeInForce = 0;
             fixAcceptedID = 0;
             fixOrderID = new char[15];
+            tokenID = 0;
         }
 
         public void display()
@@ -98,12 +100,12 @@ namespace ScannerWindowApplication
             Console.WriteLine("userID : {0}", new string(userID));
             Console.WriteLine("OrderType : {0}", orderType);
             Console.WriteLine("TimeInForce : {0}", timeInForce);
+            Console.WriteLine("Token ID : {0}", tokenID);
         }
     };
 
     public enum RequestType
     {
-        INS, AMD, CAN, UNK, FIL
+        INS, AMD, CAN, UNK, FIL, EOD
     };
-
 }

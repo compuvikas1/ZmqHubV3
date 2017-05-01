@@ -125,7 +125,7 @@ namespace ScannerWindowApplication
 
         public void loadClosePrices()
         {
-            string[] lines = File.ReadAllLines(@"C:\s2trading\zmqhubresource\contractdetails\ClosePriceTokenList.csv");
+            string[] lines = File.ReadAllLines(@"c:\windows\s2trading\zmqhubresource\contractdetails\ClosePriceTokenList.csv");
             foreach (string line in lines)
             {
                 string[] arr = line.Split(',');
@@ -177,7 +177,7 @@ namespace ScannerWindowApplication
                 DataGridViewCell dgvCell1 = row.Cells[0];
                 string tokenno = dgvCell1.Value.ToString();
                 
-                TradingBoxV2 box1 = new TradingBoxV2(tokenno);
+                TradingBoxV3 box1 = new TradingBoxV3(tokenno);
                 box1.Show();
             }
         }

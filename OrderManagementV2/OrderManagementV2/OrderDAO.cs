@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
+using System.Collections.Generic;
 
 //TODO: check if conn is not valid, again open teh connection.
 namespace OrderManagementV2
@@ -11,6 +12,7 @@ namespace OrderManagementV2
         public string orderSeq = "getNextOrder";
         public string orderIDSeq = "getNextOrderID";
         public string FillSeq = "getNextFillID";
+        public string eodSeq = "getNextEODID";
         private SqlConnection conn;
 
         public OrderDAO()
@@ -97,7 +99,7 @@ namespace OrderManagementV2
                     cmd.Connection = conn;
                     string query = "select id, fixAcceptedID, LinkedOrderId, fixOrderID, version from orders where version = (select max(version) from orders where orderNo = " + orderNo + ") and orderNo = " + orderNo + ";";
                     cmd.CommandText = query;
-                    Console.WriteLine("query : {0}", query);
+                    //Console.WriteLine("query : {0}", query);
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -133,13 +135,13 @@ namespace OrderManagementV2
                     cmd.Connection = conn;
                     string query = "select max(version) version from orders where OrderNo = (select OrderNo from Orders where ID = " + orderID + ");";
                     cmd.CommandText = query;
-                    Console.WriteLine("query : {0}", query);
+                    //Console.WriteLine("query : {0}", query);
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             var tmp = reader["version"];
-                            if (tmp != DBNull.Value) { ver = Convert.ToInt32(tmp); } else { ver = 0; }                            
+                            if (tmp != DBNull.Value) { ver = Convert.ToInt32(tmp); } else { ver = 0; }
                         }
                     }
                 }
@@ -257,11 +259,12 @@ namespace OrderManagementV2
                 string userID = "";
                 int timeinforce = -1;
                 int ordertype = -1;
+                int tokenID = -1;
 
                 using (var cmd = new SqlCommand())
                 {
                     cmd.Connection = conn;
-                    string query = "select ID,OrderStatus,LinkedOrderID,fixAcceptedID,fixOrderID,symbol,price,strike,quantity,direction,version,expiry,callput,exch,machineID,userID,timeinforce,ordertype from orders where version = (select max(version) from orders where orderNo = " + orderNo + ") and orderNo = " + orderNo + ";";
+                    string query = "select ID,OrderStatus,LinkedOrderID,fixAcceptedID,fixOrderID,tokenID,symbol,price,strike,quantity,direction,version,expiry,callput,exch,machineID,userID,timeinforce,ordertype from orders where version = (select max(version) from orders where orderNo = " + orderNo + ") and orderNo = " + orderNo + ";";
                     cmd.CommandText = query;
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -285,6 +288,7 @@ namespace OrderManagementV2
                             tmp = reader["userID"]; if (tmp != DBNull.Value) { userID = Convert.ToString(tmp); } else { userID = ""; }
                             tmp = reader["timeinforce"]; if (tmp != DBNull.Value) { timeinforce = Convert.ToInt32(tmp); } else { timeinforce = 0; }
                             tmp = reader["ordertype"]; if (tmp != DBNull.Value) { ordertype = Convert.ToInt32(tmp); } else { ordertype = 0; }
+                            tmp = reader["tokenID"]; if (tmp != DBNull.Value) { tokenID = Convert.ToInt32(tmp); } else { tokenID = 0; }
                         }
                     }
                 }
@@ -294,8 +298,8 @@ namespace OrderManagementV2
                     cmd.Connection = conn;
                     int orderID = getNextSeq(orderIDSeq);
                     Console.WriteLine("Next Seq : {0}", orderID);
-                    string query = "INSERT INTO ORDERS (ID, OrderNo, OrderStatus,LinkedOrderID,fixAcceptedID,fixOrderID,symbol,price, strike, quantity,direction,version,callput, exch, machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
-                        + orderID + "," + orderNo + "," + "'COMPLETED'" + "," + linkedOrderID + "," + fixAcceptedID + ",'" + fixOrderID + "'," + "'" + symbol + "'" + "," + price + "," + strike + "," + quantity
+                    string query = "INSERT INTO ORDERS (ID, OrderNo, OrderStatus,LinkedOrderID,fixAcceptedID,fixOrderID,tokenID,symbol,price, strike, quantity,direction,version,callput, exch, machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
+                        + orderID + "," + orderNo + "," + "'COMPLETED'" + "," + linkedOrderID + "," + fixAcceptedID + ",'" + fixOrderID + "'," + tokenID + ",'" + symbol + "'" + "," + price + "," + strike + "," + quantity
                         + ",'" + direction + "'," + (version + 1) + ",'" + callput + "','" + exch + "','" + machineID + "','" + userID + "'," + timeinforce + "," + ordertype + ",SYSDATETIME());";
                     cmd.CommandText = query;
                     Console.WriteLine("insertOrderWithOrdeNo query : {0}", query);
@@ -321,12 +325,12 @@ namespace OrderManagementV2
                     int orderNo = getNextSeq(orderSeq);
                     Console.WriteLine("Next Seq : {0}", orderNo);
                     string symbol = sanitiseField(os.symbol);
-                    string query = "INSERT INTO ORDERS (ID, OrderNo, OrderStatus,symbol,price, strike, quantity,direction,version,expiry,callput, exch, machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
-                        + orderID + "," + orderNo + "," + "'NEW'" + "," + "'" + symbol + "'" + "," + os.price + "," + os.strike + "," + os.quantity + ",'"
+                    string query = "INSERT INTO ORDERS (ID, OrderNo, OrderStatus,tokenID,symbol,price, strike, quantity,direction,version,expiry,callput, exch, machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
+                        + orderID + "," + orderNo + "," + "'NEW'" + "," + os.tokenID +",'" + symbol + "'" + "," + os.price + "," + os.strike + "," + os.quantity + ",'"
                         + os.direction + "',1,'" + new string(os.expiry) + "','" + new string(os.callput) + "','" + new string(os.exch) + "','" + new string(os.machineID)
-                        + "','" + new string(os.userID) +"'," + os.timeInForce +"," + os.orderType + ",SYSDATETIME());";
+                        + "','" + new string(os.userID) + "'," + os.timeInForce + "," + os.orderType + ",SYSDATETIME());";
                     cmd.CommandText = query;
-                    Console.WriteLine("query : {0}", query);
+                    //Console.WriteLine("query : {0}", query);
                     cmd.ExecuteNonQuery();
                     os.ID = orderID;
                     os.OrderNo = orderNo;
@@ -347,33 +351,29 @@ namespace OrderManagementV2
                 int orderID = getNextSeq(orderIDSeq);
                 int orderNo = os.OrderNo;
                 int ver = -1;
-                int id = -1;
-                int fixAcceptedID = -1;
-                string fixOrderID = "-1";
-                getLastVersion(orderNo, ref ver, ref id, ref fixAcceptedID, ref fixOrderID);
-                Console.WriteLine("DBG: " + orderNo + " : " + ver + " : " + id);
-                if (ver == 0) { ver = 1; } else { ver++; }
-                Console.WriteLine("DBG: " + orderNo + " : " + ver + " : " + id);
+                OrderStruct localOs = new OrderStruct();
+                getOrderFromDB(os.OrderNo,ref localOs);
+                //getLastVersion(orderNo, ref ver, ref id, ref fixAcceptedID, ref fixOrderID);
+                //Console.WriteLine("DBG: " + orderNo + " : " + ver + " : " + id);
+
+                if (localOs.version == 0) { ver = 1; } else { ver = localOs.version + 1; }
+                Console.WriteLine("DBG: " + localOs.OrderNo + " : " + ver + " : " + orderID);
                 /*
                  Assumption: IN case we are receiveing -1 or 0 for fixAcceptedID, we are not allowing the modification. we will go for cancel
                  and rebook -- need to check.
                  */
-                /*if (fixAcceptedID == 0) {
-                    Console.WriteLine("DBG: We are getting 0 from DB for fixAcceptedID. Hence we should do retry\n");
-                    return -1;
-                } */
                 using (var cmd = new SqlCommand())
                 {
                     cmd.Connection = conn;
                     string symbol = sanitiseField(os.symbol);
-                    string query = "INSERT INTO ORDERS (ID,OrderNo,LinkedOrderID,fixAcceptedID,fixOrderID,OrderStatus,symbol,price, strike, quantity,direction,version,expiry,callput,exch,machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
-                        + orderID + "," + orderNo + "," + id + "," + fixAcceptedID + ",'" + fixOrderID + "'," + "'AMEND'" + ",'" + symbol + "'," + os.price + "," + os.strike + "," + os.quantity + ",'" + os.direction + "',"
+                    string query = "INSERT INTO ORDERS (ID,OrderNo,LinkedOrderID,fixAcceptedID,fixOrderID,tokenID,OrderStatus,symbol,price, strike, quantity,direction,version,expiry,callput,exch,machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
+                        + orderID + "," + orderNo + "," + localOs.ID + "," + localOs.fixAcceptedID + ",'" + localOs.fixOrderID +"',"+ localOs.tokenID + "," + "'AMEND'" + ",'" + symbol + "'," + os.price + "," + os.strike + "," + os.quantity + ",'" + os.direction + "',"
                         + ver + ",'" + new string(os.expiry) + "','" + new string(os.callput) + "','" + new string(os.exch) + "','" + new string(os.machineID) + "','"
                         + new string(os.userID) + "'," + os.timeInForce + "," + os.orderType + ",SYSDATETIME());";
                     cmd.CommandText = query;
-                    Console.WriteLine("query : {0}", query);
+                    //Console.WriteLine("query : {0}", query);
                     cmd.ExecuteNonQuery();
-                    os.ID = fixAcceptedID;
+                    os.ID = localOs.fixAcceptedID;
                 }
                 return orderID;
             }
@@ -410,12 +410,12 @@ namespace OrderManagementV2
                 {
                     cmd.Connection = conn;
                     string symbol = sanitiseField(os.symbol);
-                    string query = "INSERT INTO ORDERS (ID,OrderNo,LinkedOrderID,fixAcceptedID,fixOrderID,OrderStatus,symbol,price, strike, quantity,direction,version,expiry,callput,exch,machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
-                        + orderID + "," + orderNo + "," + id + "," + fixAcceptedID + ",'" + fixOrderID + "'," + "'CANCEL'" + ",'" + symbol + "'," + os.price + "," + os.strike + "," + os.quantity + ",'" + os.direction + "',"
+                    string query = "INSERT INTO ORDERS (ID,OrderNo,LinkedOrderID,fixAcceptedID,fixOrderID,tokenID,OrderStatus,symbol,price, strike, quantity,direction,version,expiry,callput,exch,machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
+                        + orderID + "," + orderNo + "," + id + "," + fixAcceptedID + ",'" + fixOrderID + "'," + os.tokenID + ",'CANCEL'" + ",'" + symbol + "'," + os.price + "," + os.strike + "," + os.quantity + ",'" + os.direction + "',"
                         + ver + ",'" + new string(os.expiry) + "','" + new string(os.callput) + "','" + new string(os.exch) + "','" + new string(os.machineID) + "','"
                         + new string(os.userID) + "'," + os.timeInForce + "," + os.orderType + ",SYSDATETIME());";
                     cmd.CommandText = query;
-                    Console.WriteLine("query : {0}", query);
+                    //Console.WriteLine("query : {0}", query);
                     cmd.ExecuteNonQuery();
                     os.ID = fixAcceptedID;
                 }
@@ -427,7 +427,8 @@ namespace OrderManagementV2
             }
             return -1;
         }
-        
+
+        /* Used only for testing from OM Interface*/
         public int addOrderFills(OrderFillStruct ofs)
         {
             int orderNo = -1;
@@ -457,21 +458,19 @@ namespace OrderManagementV2
             return -1;
         }
 
-        public int addOrderFillsFromFIX(int orderID, string FixRef, float qty, float price, float filledQty, string status)
+        public int addOrderFillsFromFIX(int orderID, int orderNo, string FixRef, float qty, float price, float filledQty, string status)
         {
             int ordStatus = -1;
-            int orderNo = -1;
             try
             {
                 using (var cmd = new SqlCommand())
                 {
                     cmd.Connection = conn;
                     int nextSeq = getNextSeq(FillSeq);
-                    orderNo = getOrderNoFromOrderID(orderID);
                     string query = "INSERT INTO FILLS (ID,OrderNo,FillID,Quantity,Price, FilledQuantity, insertTS) VALUES ("
                     + nextSeq + "," + orderNo + "," + FixRef + "," + qty + "," + price + "," + filledQty + ",SYSDATETIME());";
                     cmd.CommandText = query;
-                    Console.WriteLine("query :" + query);
+                    //Console.WriteLine("query :" + query);
                     cmd.ExecuteNonQuery();
                 }
                 if ((ordStatus = fillStatus(orderNo)) == 0) // Order completed. Make Insert.
@@ -499,7 +498,7 @@ namespace OrderManagementV2
                     string query = "INSERT INTO fixResponse (ID,OrderNo,FixRef,status,status_msg, other_msg, insertTS) VALUES ("
                     + nextSeq + "," + orderID + "," + ExchangeOrderId + ",'" + status + "','" + status_msg + "','" + other_msg + "',SYSDATETIME());";
                     cmd.CommandText = query;
-                    Console.WriteLine("query :" + query);
+                    //Console.WriteLine("query :" + query);
                     cmd.ExecuteNonQuery();
                 }
                 return ordStatus;
@@ -521,12 +520,12 @@ namespace OrderManagementV2
                     int nextOrderSeqID = getNextSeq(orderIDSeq);
                     int lastOrderID = getOrderFromDBwithID(orderID, ref os);
                     int ver = getLastVersionFromOrderID(orderID);
-                    string query = "INSERT INTO ORDERS (ID,OrderNo,LinkedOrderID,fixAcceptedID,fixOrderID,OrderStatus,symbol,price, strike, quantity,direction,version,expiry, callput, exch, machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
-                    + nextOrderSeqID + "," + os.OrderNo + "," + lastOrderID + "," + orderID + ",'" + fixRef + "'," + "'FIX-" + status + "','" + new string(os.symbol) + "'," + os.price + "," + os.strike + "," + os.quantity + ",'"
-                    + os.direction + "'," + (ver + 1) + ",'" + new string(os.expiry) + "','" + new string(os.callput) + "','" + new string(os.exch) + "','" 
+                    string query = "INSERT INTO ORDERS (ID,OrderNo,LinkedOrderID,fixAcceptedID,fixOrderID,tokenID,OrderStatus,symbol,price, strike, quantity,direction,version,expiry, callput, exch, machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
+                    + nextOrderSeqID + "," + os.OrderNo + "," + lastOrderID + "," + orderID + ",'" + fixRef + "'," + os.tokenID + ",'FIX-" + status + "','" + new string(os.symbol) + "'," + os.price + "," + os.strike + "," + os.quantity + ",'"
+                    + os.direction + "'," + (ver + 1) + ",'" + new string(os.expiry) + "','" + new string(os.callput) + "','" + new string(os.exch) + "','"
                     + new string(os.machineID) + "','" + new string(os.userID) + "'," + os.timeInForce + "," + os.orderType + ",SYSDATETIME());";
                     cmd.CommandText = query;
-                    Console.WriteLine("query : {0}", query);
+                    //Console.WriteLine("query : {0}", query);
                     cmd.ExecuteNonQuery();
                     getOrderFromDB(os.OrderNo, ref os);
                     return 0;
@@ -559,12 +558,12 @@ namespace OrderManagementV2
                     {
                         fixAcceptedID = os.fixAcceptedID;
                     }
-                    string query = "INSERT INTO ORDERS (ID,OrderNo,LinkedOrderID,fixAcceptedID,fixOrderID,OrderStatus,symbol,price, strike, quantity,direction,version,expiry, callput, exch, machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
-                    + nextOrderSeqID + "," + os.OrderNo + "," + lastOrderID + "," + fixAcceptedID + ",'" + fixRef + "'," + "'FIX-" + status + "','" + new string(os.symbol) + "'," + os.price + "," + os.strike + "," + os.quantity + ",'"
+                    string query = "INSERT INTO ORDERS (ID,OrderNo,LinkedOrderID,fixAcceptedID,fixOrderID,tokenID,OrderStatus,symbol,price, strike, quantity,direction,version,expiry, callput, exch, machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
+                    + nextOrderSeqID + "," + os.OrderNo + "," + lastOrderID + "," + fixAcceptedID + ",'" + fixRef + "'," + os.tokenID + ",'FIX-" + status + "','" + new string(os.symbol) + "'," + os.price + "," + os.strike + "," + os.quantity + ",'"
                     + os.direction + "'," + (os.version + 1) + ",'" + new string(os.expiry) + "','" + new string(os.callput) + "','" + new string(os.exch) + "','"
                     + new string(os.machineID) + "','" + new string(os.userID) + "'," + os.timeInForce + "," + os.orderType + ",SYSDATETIME());";
                     cmd.CommandText = query;
-                    Console.WriteLine("query : {0}", query);
+                    //Console.WriteLine("query : {0}", query);
                     cmd.ExecuteNonQuery();
                     getOrderFromDB(os.OrderNo, ref os);
                     return 0;
@@ -577,12 +576,12 @@ namespace OrderManagementV2
             return -1;
         }
 
-        public int setOrdersWithFixResponseRestated(int orderID, string status, string fixRef, float price, char orderType,ref OrderStruct os)
+        public int setOrdersWithFixResponseRestated(int orderID, string status, string fixRef, float price, char orderType, ref OrderStruct os)
         {
             int fixAcceptedID = -1;
             try
             {
-                
+
                 using (var cmd = new SqlCommand())
                 {
                     cmd.Connection = conn;
@@ -596,12 +595,12 @@ namespace OrderManagementV2
                     {
                         fixAcceptedID = os.fixAcceptedID;
                     }
-                    string query = "INSERT INTO ORDERS (ID,OrderNo,LinkedOrderID,fixAcceptedID,fixOrderID,OrderStatus,symbol,price, strike, quantity,direction,version,expiry, callput, exch, machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
-                    + nextOrderSeqID + "," + os.OrderNo + "," + lastOrderID + "," + fixAcceptedID + ",'" + fixRef + "'," + "'FIX-" + status + "','" + new string(os.symbol) + "'," + price + "," + os.strike + "," + os.quantity + ",'"
+                    string query = "INSERT INTO ORDERS (ID,OrderNo,LinkedOrderID,fixAcceptedID,fixOrderID,tokenID,OrderStatus,symbol,price, strike, quantity,direction,version,expiry, callput, exch, machineID,userID,timeinforce,ordertype,insertTS) VALUES ("
+                    + nextOrderSeqID + "," + os.OrderNo + "," + lastOrderID + "," + fixAcceptedID + ",'" + fixRef + "'," + os.tokenID + ",'FIX-" + status + "','" + new string(os.symbol) + "'," + price + "," + os.strike + "," + os.quantity + ",'"
                     + os.direction + "'," + (os.version + 1) + ",'" + new string(os.expiry) + "','" + new string(os.callput) + "','" + new string(os.exch) + "','"
-                    + new string(os.machineID) + "','" + new string(os.userID) + "'," + os.timeInForce + "," + Convert.ToInt32(orderType) + ",SYSDATETIME());";
+                    + new string(os.machineID) + "','" + new string(os.userID) + "'," + os.timeInForce + "," + orderType + ",SYSDATETIME());";
                     cmd.CommandText = query;
-                    Console.WriteLine("query : {0}", query);
+                    //Console.WriteLine("query : {0}", query);
                     cmd.ExecuteNonQuery();
                     getOrderFromDB(os.OrderNo, ref os);
                     return 0;
@@ -648,7 +647,7 @@ namespace OrderManagementV2
                 using (var cmd = new SqlCommand())
                 {
                     cmd.Connection = conn;
-                    cmd.CommandText = "SELECT ID,OrderNo,OrderStatus,fixAcceptedID, fixOrderID, orderType, timeInForce, symbol,price, quantity,direction,version,machineID,userID,insertTS FROM ORDERS where version = (select max(version) from orders where orderNo = " + OrderNo + ") and orderNo = " + OrderNo + ";";
+                    cmd.CommandText = "SELECT ID,OrderNo,OrderStatus,fixAcceptedID, fixOrderID, tokenID, orderType, timeInForce, symbol,price, quantity,direction,version,machineID,userID,insertTS FROM ORDERS where version = (select max(version) from orders where orderNo = " + OrderNo + ") and orderNo = " + OrderNo + ";";
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -681,6 +680,8 @@ namespace OrderManagementV2
                             if (tmp != DBNull.Value) { os.orderType = (int)Convert.ToInt32((Int32)tmp); }
                             tmp = reader["timeInForce"];
                             if (tmp != DBNull.Value) { os.timeInForce = (int)Convert.ToInt32((Int32)tmp); }
+                            tmp = reader["tokenID"];
+                            if (tmp != DBNull.Value) { os.tokenID = (int)Convert.ToInt32((Int32)tmp); }
                         }
                     }
                 }
@@ -700,7 +701,7 @@ namespace OrderManagementV2
                 using (var cmd = new SqlCommand())
                 {
                     cmd.Connection = conn;
-                    cmd.CommandText = "SELECT ID,OrderNo,OrderStatus,fixAcceptedID, fixOrderID, symbol,price, quantity,direction,version,machineID,userID,insertTS,orderType,timeInForce FROM ORDERS where ID = " + OrderID + ";";
+                    cmd.CommandText = "SELECT ID,OrderNo,OrderStatus,fixAcceptedID, fixOrderID, tokenID, symbol,price, quantity,direction,version,machineID,userID,insertTS,orderType,timeInForce FROM ORDERS where ID = " + OrderID + ";";
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -733,6 +734,8 @@ namespace OrderManagementV2
                             if (tmp != DBNull.Value) { os.orderType = (int)Convert.ToInt32((Int32)tmp); }
                             tmp = reader["timeInForce"];
                             if (tmp != DBNull.Value) { os.timeInForce = (int)Convert.ToInt32((Int32)tmp); }
+                            tmp = reader["tokenID"];
+                            if (tmp != DBNull.Value) { os.tokenID = (int)Convert.ToInt32((Int32)tmp); }
                         }
                     }
                 }
@@ -756,7 +759,7 @@ namespace OrderManagementV2
                     cmd.Connection = conn;
                     string query = "select ID, OrderNo from ORDERS WHERE ID = " + orderID + ";";
                     cmd.CommandText = query;
-                    Console.WriteLine("query : {0}", query);
+                   // Console.WriteLine("query : {0}", query);
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -806,7 +809,193 @@ namespace OrderManagementV2
             }
         }
 
+        //EOD Position handling methods
+        // get the token, user, direction, qty
+        //Formula --> val = ['b']->val - ['s']->val;
 
+        private float getYdayEodPosition(int tokenID, string userID)
+        {
+            try
+            {
+                float ydayEod = 0;
+                using (var cmd = new SqlCommand())
+                {
+                    cmd.Connection = conn;
+                    cmd.CommandText = "SELECT value from eodPositions where eod_Date = GETDATE()-1 and mode = 'auto' and tokenID = " + tokenID + " and userID = '" + userID + "';";
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var tmp = reader["value"];
+                            if (tmp != DBNull.Value) { ydayEod = (float)((Decimal)tmp); }
+                        }
+                    }
+                }
+                return ydayEod;
+            } catch(Exception ex)
+            {
+                Console.Write("Exception(getYdayEodPosition) : " + ex.Message);
+            }
+            return -1;
+        }
+
+        private float calculateEodPosition(int tokenID, string userID)
+        {
+            try
+            {
+                float buyFillQty = 0;
+                float saleFillQty = 0;
+                float position = 0;
+                float ydayEod = 0;
+                int dateOffset = 0;
+                using (var cmd = new SqlCommand())
+                {
+                    cmd.Connection = conn;
+                    string query = "select p.direction direction, sum(pp.quantity) filledQty, pp.fillDate fillDate " +
+                        "from(select o.OrderNo, max(version) ver, o.direction, o.tokenID, o.userID from orders o "+
+                        "Group By o.OrderNo, o.direction, o.tokenID, o.userID) p INNER JOIN(select orderNo, DATEADD(dd, "+
+                        "DATEDIFF(dd, 0, insertTS), 0) fillDate, sum(FilledQuantity) quantity from fills group by OrderNo, "+
+                        "DATEADD(dd, DATEDIFF(dd, 0, insertTS), 0)) pp ON pp.orderNo = p.OrderNo WHERE p.tokenID = "+ tokenID +" and "+
+                        "p.userID = '"+ userID +"' and fillDate = DATEADD(dd, DATEDIFF(dd, 0, GETDATE() - "+ dateOffset +
+                        "), 0) Group by p.direction, pp.fillDate;";
+                    cmd.CommandText = query;
+                    //Console.WriteLine("query : {0}", query);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var tmp = reader["direction"];
+                            if (tmp != DBNull.Value)
+                            {
+                                var val = reader["filledQty"];
+                                if (tmp.Equals("B"))
+                                {
+                                    buyFillQty = (float)((Decimal)val);
+                                }
+                                else
+                                {
+                                    saleFillQty = (float)((Decimal)val);
+                                }
+                            }
+                        }
+                    }                     
+                }
+                ydayEod = getYdayEodPosition(tokenID,userID);
+                position = ydayEod + buyFillQty - saleFillQty;
+                Console.WriteLine("ydayeod : " + ydayEod + " buyFillQty : " + buyFillQty +" saleFillQty : " + saleFillQty +" position :" + position);
+                return position;
+            }
+            catch (Exception ex)
+            {
+                Console.Write("Exception(setPosition) : " + ex.Message);
+            }
+            return -1;
+        }
+
+        public int setPosition(int tokenID, float value, string userID, string mode)
+        {
+            try
+            {
+                using (var cmd = new SqlCommand())
+                {
+                    cmd.Connection = conn;
+                    int nextEODSeqID = getNextSeq(eodSeq);                    
+                    string query = "INSERT INTO eodPositions (ID,eod_date,tokenID, userID, value, mode,insertTS) VALUES ("
+                    + nextEODSeqID + ",SYSDATETIME()," + tokenID + ",'" + userID + "'," + value + ",'"+ mode +"',SYSDATETIME());";
+                    cmd.CommandText = query;
+                    Console.WriteLine("query : {0}", query);
+                    cmd.ExecuteNonQuery();
+                    return nextEODSeqID;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Write("Exception(setPosition) : " + ex.Message);
+            }
+            return -1;
+        }
+
+        public int setEodPosition(int tokenID, string userID) {
+            float value = 0;
+            int eodID = -1;
+            value = calculateEodPosition(tokenID, userID);
+            Console.WriteLine("setEodPosition value : " + value);
+            if (value != 0)
+            {
+                eodID = setPosition(tokenID, value, userID, "auto");
+            }
+            return eodID;
+        }
+
+        public int takeSnapshotPosition(int tokenID, string userID)
+        {
+            float value = 0;
+            int eodID = -1;
+            value = calculateEodPosition(tokenID, userID);
+            eodID = setPosition(tokenID, value, userID, "manual");
+            return eodID;
+        }
+
+        public float getCurrentPosition(int tokenID, string userID)
+        {
+            return(calculateEodPosition(tokenID, userID));
+        }
+
+        private int getTokenAndUserIDYtd(ref Dictionary<string,int> eodList)
+        {
+            try
+            {
+                using (var cmd = new SqlCommand())
+                {
+                    cmd.Connection = conn;
+                    cmd.CommandText = "select distinct p.tokenID tokID, p.userID  usrID from ( select distinct o.OrderNo, o.tokenID, o.userID from orders o) p"+
+                        " INNER JOIN (select distinct orderNo, DATEADD(dd, DATEDIFF(dd, 0, insertTS), 0) fillDate from fills ) pp ON pp.orderNo = p.OrderNo"+
+                        " WHERE fillDate = DATEADD(dd, DATEDIFF(dd, 0, GETDATE()), 0);";
+                    Console.WriteLine(cmd.CommandText);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var tokID = reader["tokID"];
+                            var usrID = reader["usrID"];
+                            eodList.Add(tokID+":"+usrID,1);
+                        }
+                    }
+                    cmd.CommandText = "select tokenID, userID from eodPositions where DATEADD(dd, DATEDIFF(dd,0,eod_date), 0) = DATEADD(dd, DATEDIFF(dd,0,GETDATE()), 0);";
+                    Console.WriteLine(cmd.CommandText);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var tokID = reader["tokenID"];
+                            var usrID = reader["userID"];
+                            eodList.Add(tokID + ":" + usrID, 2);
+                        }
+                    }
+                }
+                return eodList.Count;
+            }
+            catch (Exception ex)
+            {
+                Console.Write("Exception(getTokenAndUserIDYtd) : " + ex.Message);
+            }
+            return -1;
+        }
+
+        public int runEodPositions()
+        {
+            //get all the token from today
+            var eodList = new Dictionary<string, int>();
+            int totalToken = getTokenAndUserIDYtd(ref eodList);
+            Console.WriteLine("Total token to be selected for EOD : "+totalToken);
+            foreach(string item in eodList.Keys)
+            {
+                string [] items = item.Split(':');
+                int val = setEodPosition(Convert.ToInt32(items[0]),items[1]);
+                Console.WriteLine("For Token : " + items[0]+ " userID : "+items[1] + " Eod Save ID : "+val);
+            }
+            return 0;
+        }
     }
 }
 

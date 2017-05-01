@@ -53,7 +53,7 @@
             this.txtFolderPath.Name = "txtFolderPath";
             this.txtFolderPath.Size = new System.Drawing.Size(263, 20);
             this.txtFolderPath.TabIndex = 1;
-            this.txtFolderPath.Text = "C:\\s2trading\\zmqhubresource\\contractdetails";
+            this.txtFolderPath.Text = "C:\\windows\\s2trading\\zmqhubresource\\contractdetails";
             // 
             // btnBrowse
             // 

@@ -81,7 +81,7 @@ namespace ScannerWindowApplication
                                 string[] arr = origMessageSplit[0].Split('|');
 
                                 //string tokenno, ltp, ltq, bidprice, bidsize, askprice, asksize, feedtime
-
+                                //token,ltp,ltq,b_amt,b_qty,a_amt,a_qty,lft,ltt,totalVol,open,high,low
                                 string tokenno = arr[0];
                                 double ltp = Convert.ToDouble(arr[1]) / 100.0;
                                 string ltq = arr[2];
@@ -96,15 +96,27 @@ namespace ScannerWindowApplication
                                 string ltt = arr[8];
                                 string tradetime = "";
                                 if (ltt.Equals("0") == false)
+                                {                                    
+                                    DateTime dt2 = epoch.AddMilliseconds(Convert.ToInt64(ltt));
+                                    tradetime = dt2.ToString("HH:mm:ss.ff");
+                                }
+
+                                string volume = arr[9];
+                                string open = "0";
+                                string high = "0";
+                                string low = "0";
+
+                                if (arr.Length >= 12)
                                 {
-                                    DateTime dt2 = epoch.AddSeconds(Convert.ToInt64(ltt) / 1000);
-                                    tradetime = dt2.ToString("HH:mm:ss");
+                                    open = arr[10];
+                                    high = arr[11];
+                                    low = arr[12];
                                 }
 
                                 //DateTime dt = DateTime.Now;
                                 //string feedtime = dt.ToString("HH:mm:ss");                        
 
-                                Feed feed = new Feed(tokenno, feedtime, Convert.ToString(ltp), ltq, bidsize, Convert.ToString(bidprice), Convert.ToString(askprice), asksize);
+                                Feed feed = new Feed(tokenno, feedtime, Convert.ToString(ltp), ltq, bidsize, Convert.ToString(bidprice), Convert.ToString(askprice), asksize, tradetime, volume, open, high,low);
 
                                 ScannerBox.qfeed.Enqueue(feed);
                                 string key = feed.tokenno;                                
@@ -125,61 +137,8 @@ namespace ScannerWindowApplication
                                 if (origMessageSplit.Length > 1)
                                 {
                                     dictFeedLevels[key] = origMessageSplit[1];
-                                }
-                                                                
-                                //bool flagClosePriceCondition = true;
-                                //bool flagLtpCondition = true;
-                                //bool flagQuantityCondition = true;
-
-                                //bool foundKey = false;
-
-                                //List<SymbolFilter> listSymbolFilter;
-                                //if (parentSD.dictFilters.TryGetValue(feed.symbol.Trim(), out listSymbolFilter))
-                                //{
-                                //    foreach (var symbolfilter in listSymbolFilter)
-                                //    {
-                                //        double closePrice = Convert.ToDouble(feed.bidprice);
-                                //        double ltp = Convert.ToDouble(feed.ltp);
-                                //        int quantity = Convert.ToInt32(feed.ltq);
-
-                                //        if (symbolfilter.closePrice != 0 && closePrice < symbolfilter.closePrice)
-                                //            flagClosePriceCondition = false;
-                                //        else
-                                //            flagClosePriceCondition = true;
-
-                                //        if (symbolfilter.ltp != 0 && ltp < symbolfilter.ltp)
-                                //            flagLtpCondition = false;
-                                //        else
-                                //            flagLtpCondition = true;
-
-                                //        if (symbolfilter.quantity != 0 && quantity < symbolfilter.quantity)
-                                //            flagQuantityCondition = false;
-                                //        else
-                                //            flagQuantityCondition = true;
-
-                                //        if (flagClosePriceCondition &&
-                                //            flagLtpCondition && flagQuantityCondition)
-                                //        {
-                                //            ScannerBox.qfeed.Enqueue(feed);                                            
-                                //            string key = feed.tokenno;
-                                //            foundKey = true;
-                                //            dictFeedDetails[key] = feed;
-                                //        }
-                                //    }
-                                //}
-
-                                //check if it needs to be removed from the hashmap and the data table
-                                //if (foundKey == false)
-                                //{
-                                //    var exisiting = ScannerBox.dtFeed.Rows.Find(new Object[] { feed.symbol, feed.expiry, feed.strike, feed.callput, feed.exch });
-                                //    if (exisiting != null)
-                                //    {
-                                //        exisiting.Delete();
-                                //    }
-                                //}
-                                //Console.WriteLine(messageReceived);
-                            }
-                            
+                                }                                
+                            }                            
                         }
                         catch (Exception e)
                         {

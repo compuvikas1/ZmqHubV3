@@ -92,6 +92,7 @@
     <Compile Include="ClosePriceForm.Designer.cs">
       <DependentUpon>ClosePriceForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="model\BlackScholesCalc.cs" />
     <Compile Include="model\Feed.cs" />
     <Compile Include="model\FillSubscriber.cs" />
     <Compile Include="model\MySqlHelper.cs" />
@@ -132,11 +133,11 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="model\Subscriber.cs" />
-    <Compile Include="TradingBoxV2.cs">
+    <Compile Include="TradingBoxV3.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="TradingBoxV2.Designer.cs">
-      <DependentUpon>TradingBoxV2.cs</DependentUpon>
+    <Compile Include="TradingBoxV3.Designer.cs">
+      <DependentUpon>TradingBoxV3.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="ClosePriceForm.resx">
       <DependentUpon>ClosePriceForm.cs</DependentUpon>
@@ -162,8 +163,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="TradingBoxV2.resx">
-      <DependentUpon>TradingBoxV2.cs</DependentUpon>
+    <EmbeddedResource Include="SecurityMasterGenerator.resx">
+      <DependentUpon>SecurityMasterGenerator.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TradingBoxV3.resx">
+      <DependentUpon>TradingBoxV3.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

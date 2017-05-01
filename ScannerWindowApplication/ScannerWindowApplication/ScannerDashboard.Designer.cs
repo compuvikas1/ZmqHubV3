@@ -36,6 +36,7 @@
             this.orderBlotterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eODToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closePriceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.eODPositionSnapshotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -93,7 +94,8 @@
             // eODToolStripMenuItem
             // 
             this.eODToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.closePriceToolStripMenuItem});
+            this.closePriceToolStripMenuItem,
+            this.eODPositionSnapshotToolStripMenuItem});
             this.eODToolStripMenuItem.Name = "eODToolStripMenuItem";
             this.eODToolStripMenuItem.Size = new System.Drawing.Size(42, 20);
             this.eODToolStripMenuItem.Text = "EOD";
@@ -101,9 +103,16 @@
             // closePriceToolStripMenuItem
             // 
             this.closePriceToolStripMenuItem.Name = "closePriceToolStripMenuItem";
-            this.closePriceToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.closePriceToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
             this.closePriceToolStripMenuItem.Text = "Close Price";
             this.closePriceToolStripMenuItem.Click += new System.EventHandler(this.closePriceToolStripMenuItem_Click);
+            // 
+            // eODPositionSnapshotToolStripMenuItem
+            // 
+            this.eODPositionSnapshotToolStripMenuItem.Name = "eODPositionSnapshotToolStripMenuItem";
+            this.eODPositionSnapshotToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
+            this.eODPositionSnapshotToolStripMenuItem.Text = "EOD Position Snapshot";
+            this.eODPositionSnapshotToolStripMenuItem.Click += new System.EventHandler(this.eODPositionSnapshotToolStripMenuItem_Click);
             // 
             // ScannerDashboard
             // 
@@ -134,6 +143,7 @@
         private System.Windows.Forms.ToolStripMenuItem bODToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem securityMasterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closePriceToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem eODPositionSnapshotToolStripMenuItem;
     }
 }
 

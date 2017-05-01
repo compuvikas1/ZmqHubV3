@@ -30,7 +30,7 @@ namespace ScannerWindowApplication
 
         public void loadSecurityMaster()
         {
-            string []lines = File.ReadAllLines(@"C:\s2trading\zmqhubresource\contractdetails\SecurityMaster.csv");
+            string []lines = File.ReadAllLines(@"c:\windows\s2trading\zmqhubresource\contractdetails\SecurityMaster.csv");
             foreach(string line in lines)
             {
                 if (line.Contains("ScripNo")) continue;
@@ -47,15 +47,16 @@ namespace ScannerWindowApplication
                 string ExpiryDate = arr[6];
                 string StrikePrice = arr[7];
                 string OptType = arr[8];
+                string fullname = arr[9];
 
-                SecurityMaster data = new SecurityMaster(TokenNo, UnderlyingScripNo, Instrument, Symbol, TradeSymbol, MLot, ExpiryDate, StrikePrice, OptType);
+                SecurityMaster data = new SecurityMaster(TokenNo, UnderlyingScripNo, Instrument, Symbol, TradeSymbol, MLot, ExpiryDate, StrikePrice, OptType, fullname);
                 dictSecurityMaster[TokenNo] = data;
             }
         }
 
         //public void loadSecurityClosePrices()
         //{
-        //    string[] lines = File.ReadAllLines(@"C:\s2trading\zmqhubresource\contractdetails\cm20FEB2017bhav.csv");
+        //    string[] lines = File.ReadAllLines(@"c:\windows\s2trading\zmqhubresource\contractdetails\cm20FEB2017bhav.csv");
 
         //    List<SecurityMaster> listEQSecMaster = ScannerDashboard.dictSecurityMaster.Where(x => x.Value.Instrument == "EQ").Select(x => x.Value).ToList();
 
@@ -90,7 +91,7 @@ namespace ScannerWindowApplication
 
         //    return;
 
-        //    lines = File.ReadAllLines(@"C:\s2trading\zmqhubresource\contractdetails\fo20FEB2017bhav.csv");
+        //    lines = File.ReadAllLines(@"c:\windows\s2trading\zmqhubresource\contractdetails\fo20FEB2017bhav.csv");
         //    int ctr = 0;
         //    foreach (string line in lines)
         //    {
@@ -287,6 +288,16 @@ namespace ScannerWindowApplication
         {
             ClosePriceForm closePriceForm = new ClosePriceForm();
             closePriceForm.Show();
+        }
+
+        private void eODPositionSnapshotToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            bool res = OrderClient.insertOrderEOD();
+            if (res)
+                MessageBox.Show("EOD Snapshot Done");
+            else
+                MessageBox.Show("EOD Snapshot Error");
+
         }
     }
 }

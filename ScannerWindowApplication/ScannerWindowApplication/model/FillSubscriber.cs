@@ -45,8 +45,8 @@ namespace ScannerWindowApplication
                                 string[] arr = messageReceived.Split(':');
                                 //machineID + ":" + userID+":"+OrderNo+":"+ExchangeOrderId+":"+status+":"+status_msg+":"+other_msg
                                 //[3d0e9dfa-5c5d-85a2-1833-e1e1cf52c13e:b5479e69-9bab-1023-068f-f8bafaafb7de:35:1470420475:0:0:0
-
-                                dictFillDetails[arr[2]] = arr[3] + ":" + arr[4] + ":" + arr[5] + ":" + arr[6];
+                                //machineID + ":" + userID + ":" + OrderNo + ":" + OrderStatus + ":" + ExchangeOrderId + ":" + status + ":" + status_msg + ":" + other_msg;
+                                dictFillDetails[arr[2]] = arr[3] + ":" + arr[4] + ":" + arr[5] + ":" + arr[6] + ":" +arr[7];
                             }
                         }
                         catch (Exception e)

@@ -128,6 +128,10 @@ namespace OrderManagementV2
                 {
                     return RequestType.FIL;
                 }
+                else if (req == 5)
+                {
+                    return RequestType.EOD;
+                }
                 else
                 {
                     return RequestType.UNK;
@@ -221,6 +225,18 @@ namespace OrderManagementV2
                             else
                             {
                                 serverResponse = "SUCCESS:FIL:ORDID:" + Convert.ToString(os.OrderNo);
+                            }
+                            break;
+                        case RequestType.EOD:
+                            Orders eodObj = new Orders();
+                            int totalStatus = -1;
+                            if ((totalStatus =  eodObj.takeEODPositions()) < 0)
+                            {
+                                serverResponse = "FAILURE:EOD:" + totalStatus;
+                            }
+                            else
+                            {
+                                serverResponse = "FAILURE:EOD:" + totalStatus;
                             }
                             break;
                         default:
